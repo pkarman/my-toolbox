@@ -17,27 +17,35 @@ my $debug = 1;
 
 for my $file (@ARGV) {
     my $buf = read_file($file);
-    if ( is_php($buf) ) {
+    if ( is_php( $buf, $file ) ) {
         run_php_tidy($file);
     }
-    elsif ( is_perl($buf) ) {
+    elsif ( is_perl( $buf, $file ) ) {
         run_perl_tidy($file);
     }
-    elsif ( is_ruby($buf) ) {
+    elsif ( is_ruby( $buf, $file ) ) {
         run_ruby_tidy($file);
     }
 }
 
 sub is_php {
-    my $buf = shift;
+    my $buf  = shift;
+    my $file = shift;
     if ( $buf =~ m/<\?php/ ) {
+        return 1;
+    }
+    if ( $file =~ m/\.php$/ ) {
         return 1;
     }
     return 0;
 }
 
 sub is_perl {
-    my $buf = shift;
+    my $buf  = shift;
+    my $file = shift;
+    if ( $file =~ m/\.(pm|pl)$/ ) {
+        return 1;
+    }
     if ( $buf =~ m!use strict;! ) {
         return 1;
     }
@@ -54,14 +62,18 @@ sub is_perl {
 }
 
 sub is_ruby {
-    my $buf = shift;
-    if ($buf =~ m!/bin/ruby!) {
+    my $buf  = shift;
+    my $file = shift;
+    if ( $file =~ m/\.rb$/ ) {
         return 1;
     }
-    if ($buf =~ m!\nclass \w+!) {
+    if ( $buf =~ m!/bin/ruby! ) {
         return 1;
     }
-    if ($buf =~ m!require (['"])rubygems\1!) {
+    if ( $buf =~ m!\nclass \w+! ) {
+        return 1;
+    }
+    if ( $buf =~ m!require (['"])rubygems\1! ) {
         return 1;
     }
 }

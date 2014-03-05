@@ -1,0 +1,14 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+use Lingua::Stem::Snowball;
+
+my @words = @ARGV;
+my $stemmer
+    = Lingua::Stem::Snowball->new( lang => 'en', encoding => 'UTF-8', );
+for my $word (@words) {
+    my @stems = $stemmer->stem($word);
+    for my $stem (@stems) {
+        print "$word => $stem\n";
+    }
+}

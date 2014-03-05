@@ -1,0 +1,16 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+use Carp;
+
+printf("%s\n", random_str(@ARGV));
+
+sub random_str {
+    my $n = shift || 12;
+    if ( $n =~ m/\D/ ) {
+        croak "error: 'n' must be a positive integer, not $n";
+    }
+    my @chars = ( "A" .. "N", "P" .. "Z", "a" .. "k", "m" .. "z", 0 .. 9, '.' );
+    return join( "", @chars[ map { rand @chars } ( 1 .. $n ) ] );
+}
+

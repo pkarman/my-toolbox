@@ -1,0 +1,9 @@
+#!/usr/bin/env perl
+#
+use strict;
+use warnings;
+
+for (0 .. 32) {
+    printf("%02u  x%02x\n", $_, $_);
+}
+

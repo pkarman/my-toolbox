@@ -1,0 +1,76 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+use Data::Dump qw( dump );
+
+while (<>) {
+    my %p = webparams($_);
+    dump \%p;
+}
+
+sub webparams
+{
+  my $query=shift()||$ENV{QUERY_STRING};
+  if(! $query && $ENV{REQUEST_METHOD} eq "POST"){
+    read(STDIN,$query , $ENV{CONTENT_LENGTH});
+    $ENV{QUERY_STRING}=$query;
+  }
+  my %R;
+  for(split("&",$query)){
+    next if !length($_);
+    my($nkl,$verdi)=map urldec($_),split("=",$_,2);
+    $R{$nkl}=exists$R{$nkl}?"$R{$nkl},$verdi":$verdi;
+  }
+  return %R;
+}
+
+=head2 urlenc
+
+Input: a string
+
+Output: the same string URL encoded so it can be sent in URLs or POST requests.
+
+In URLs (web addresses) certain characters are illegal. For instance I<space> and I<newline>.
+And certain other chars have special meaning, such as C<+>, C<%>, C<=>, C<?>, C<&>.
+
+These illegal and special chars needs to be encoded to be sent in
+URLs.  This is done by sending them as C<%> and two hex-digits. All
+chars can be URL encodes this way, but it's necessary just on some.
+
+Example:
+
+ $search="Østdal, Åge";
+ use LWP::Simple;
+ my $url="http://machine.somewhere.com/cgi-bin/script?s=".urlenc($search);
+ print $url;
+ my $html = get($url);
+
+Prints C<< http://soda.uio.no/cgi/DB/person?id=%D8stdal%2C+%C5ge >>
+
+=cut
+
+sub urlenc
+{
+  my $str=shift;
+  $str=~s/([^\w\-\.\/\,\[\]])/sprintf("%%%02x",ord($1))/eg; #more chars is probably legal...
+  return $str;
+}
+
+=head2 urldec
+
+Opposite of L</urlenc>.
+
+Example, this returns 'C< ø>'. That is space and C<< ø >>.
+
+ urldec('+%C3')
+
+=cut
+
+sub urldec{
+  my $str=shift;
+#  $str=~y/+/ /;
+  $str=~s/\+/ /gs;
+  $str=~s/%([a-f\d]{2})/pack("C", hex($1))/egi;
+  return $str;
+}
+

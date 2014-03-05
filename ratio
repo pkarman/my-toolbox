@@ -1,0 +1,11 @@
+#!/usr/bin/env perl
+
+use Image::Size;
+my $usage = "$0 img_file scale [ outputs WxH ]\n";
+my $file = shift @ARGV or die $usage;
+my $scale = shift @ARGV or die $usage;
+my ($w,$h) = imgsize($file);
+my $w_scale = $w * $scale;
+my $h_scale = $h * $scale;
+print "${w_scale}x${h_scale}\n";
+

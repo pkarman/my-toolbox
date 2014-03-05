@@ -1,0 +1,12 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+use Search::Tools;
+use Search::Tools::XML;
+
+for my $file (@ARGV) {
+    my $xml = Search::Tools->slurp($file);
+    print Search::Tools::XML->tidy($xml);
+    print "\n";
+}
+

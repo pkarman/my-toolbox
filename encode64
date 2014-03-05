@@ -1,0 +1,1 @@
+perl -e 'use MIME::Base64; chomp(my $p = <>); print encode_base64($p, ""), $/;'

@@ -1,0 +1,72 @@
+#!/opt/pij/bin/perl
+use strict;
+use Data::Dump qw( dump );
+use Net::LDAP::Class::User::AD;
+use Net::LDAP::Class::Group::AD;
+use Path::Class;
+
+chomp( my $user_name   = `whoami` );
+chomp( my $proper_name = file("$ENV{HOME}/.w/.user")->slurp );
+chomp( my $old_pass    = file("$ENV{HOME}/.w/.pass")->slurp );
+
+if ( !$proper_name or !$old_pass ) {
+    die "Can't find credentials in $ENV{HOME}/.w/";
+}
+
+my $BASE_DN = 'DC=mpr,DC=org';
+my $AD_IP   = 'ldap://mpr.org:389';
+my $ldap    = Net::LDAP->new($AD_IP);
+$ldap or die "can't connect to LDAP: $!";
+
+# mangle the CN value
+my $cn = $proper_name;
+$cn =~ s/^(.+)\ +(.+)$/$2\\, $1/;
+my $mesg = $ldap->bind(
+    dn       => "CN=$cn,OU=Minnesota,OU=People,$BASE_DN",
+    password => $old_pass,
+) or die "can't bind";
+$mesg->code && die $mesg->error;
+
+{
+
+    package UserClass;
+    @UserClass::ISA = qw( Net::LDAP::Class::User::AD );
+
+    UserClass->metadata->setup(
+        ldap              => $ldap,
+        base_dn           => $BASE_DN,
+        attributes        => __PACKAGE__->AD_attributes,
+        unique_attributes => __PACKAGE__->AD_unique_attributes,
+    );
+
+    sub init_group_class {'GroupClass'}
+
+}
+
+{
+
+    package GroupClass;
+    @GroupClass::ISA = qw( Net::LDAP::Class::Group::AD );
+
+    GroupClass->metadata->setup(
+        ldap              => $ldap,
+        base_dn           => $BASE_DN,
+        attributes        => __PACKAGE__->AD_attributes,
+        unique_attributes => __PACKAGE__->AD_unique_attributes,
+    );
+
+    sub init_user_class {'UserClass'}
+
+}
+
+my $user = UserClass->new( ldap => $ldap, sAMAccountName => $user_name );
+if ( !$user->read ) {
+    die "can't find sAMAccountName => $user_name in LDAP\n";
+}
+
+#dump $user->read()->ldap_entry->dump;
+
+printf( " password last set: %s\n", $user->pwd_last_set_localtime );
+printf( " last logon: %s\n",        $user->last_logon_localtime );
+printf( " pswd will expire: %s\n",  $user->pwd_will_expire_localtime );
+

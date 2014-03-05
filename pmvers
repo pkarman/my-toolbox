@@ -1,0 +1,9 @@
+#!/bin/sh
+
+NEW=$1
+if [ ! $NEW ]; then
+    echo "need new VERSION"
+    exit 1
+fi
+
+grep -lr 'VERSION = ' lib | grep -v .svn | xargs perl -pi -e "s/VERSION = '.+?'/VERSION = '$NEW'/"

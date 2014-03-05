@@ -1,0 +1,87 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+
+#
+# call perltidy or phptidy or rtidy, depending on whether the file(s)
+# is php or perl or ruby.
+#
+
+use File::Slurp;
+
+if ( !@ARGV ) {
+    die "$0 filename\n";
+}
+
+my $debug = 1;
+
+for my $file (@ARGV) {
+    my $buf = read_file($file);
+    if ( is_php($buf) ) {
+        run_php_tidy($file);
+    }
+    elsif ( is_perl($buf) ) {
+        run_perl_tidy($file);
+    }
+    elsif ( is_ruby($buf) ) {
+        run_ruby_tidy($file);
+    }
+}
+
+sub is_php {
+    my $buf = shift;
+    if ( $buf =~ m/<\?php/ ) {
+        return 1;
+    }
+    return 0;
+}
+
+sub is_perl {
+    my $buf = shift;
+    if ( $buf =~ m!use strict;! ) {
+        return 1;
+    }
+    if ( $buf =~ m!/usr/bin/env perl! ) {
+        return 1;
+    }
+    if ( $buf =~ m!/usr/bin/perl! ) {
+        return 1;
+    }
+    if ( $buf =~ m/package \w+/ ) {
+        return 1;
+    }
+    return 0;
+}
+
+sub is_ruby {
+    my $buf = shift;
+    if ($buf =~ m!/bin/ruby!) {
+        return 1;
+    }
+    if ($buf =~ m!\nclass \w+!) {
+        return 1;
+    }
+}
+
+sub run {
+    my $cmd = shift;
+
+    #warn $cmd if $debug;
+    system($cmd) and die "$cmd failed: $!";
+}
+
+sub run_perl_tidy {
+    my $file = shift;
+    run("perltidy -pbp $file > $file.tdy && mv $file.tdy $file");
+}
+
+sub run_php_tidy {
+    my $file = shift;
+    run("phptidy replace $file");
+}
+
+sub run_ruby_tidy {
+    my $file = shift;
+    run("rtidy $file");
+}
+

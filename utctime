@@ -1,0 +1,12 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+use DateTime;
+use DateTime::Format::DateParse;
+
+if ( !@ARGV ) { @ARGV = ( scalar localtime() ) }
+for my $str (@ARGV) {
+    my $dt = DateTime::Format::DateParse->parse_datetime($str);
+    $dt->set_time_zone('UTC');
+    printf( "You said: %s  => UTC: %s\n", $str, $dt );
+}

@@ -97,6 +97,6 @@ sub run_php_tidy {
 
 sub run_ruby_tidy {
     my $file = shift;
-    run("rtidy $file");
+    run("rbeautify $file");
 }
 

@@ -1,0 +1,40 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+use Audio::Scan;
+use Data::Dump qw( dump );
+use Getopt::Long;
+use Pod::Usage;
+
+my $help;
+my $info = 1;
+my $tags;
+GetOptions(
+    'help' => \$help,
+    'tags' => \$tags,
+    'info' => \$info,
+) or pod2usage(2);
+pod2usage(1) if $help;
+
+for my $file (@ARGV) {
+    my $scan = Audio::Scan->scan($file);
+    if ($info) {
+        delete $scan->{info}->{xing_toc};    # noise
+        dump $scan->{info};
+        my $ms = $scan->{info}->{song_length_ms};
+        printf( "length: %s\n", ms2hms($ms) );
+    }
+    if ($tags) {
+        dump $scan->{tags};
+    }
+}
+
+sub ms2hms {
+    my $ms    = shift;
+    my $secs  = int( $ms / 1000 );
+    my $hours = int( $secs / 3600 );
+    my $rm    = $secs % 3600;
+    my $min   = int( $rm / 60 );
+    my $sec   = $rm % 60;
+    return sprintf( "%02d:%02d:%02d", $hours, $min, $sec );
+}

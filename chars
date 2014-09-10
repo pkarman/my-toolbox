@@ -1,0 +1,28 @@
+#!/usr/bin/perl 
+# 
+# perl@peknet.com
+#
+# print chart of chars and corresponding hexdump vals
+# just latin1 by default
+# otherwise, specify start/stop numerals at cmd line
+#
+use strict;
+use warnings;
+use Term::ANSIColor;
+binmode STDOUT, ':utf8';
+print '   ';
+my $on    = color('bold');
+my $off   = color('reset');
+my $c     = 0;
+my $start = shift @ARGV || 161;
+my $stop  = shift @ARGV || 255;
+for (33 .. 126, $start .. $stop)
+{
+    printf("\\%05d  %c  \\x%05x     ", $_, $_, $_);
+    if (++$c == 4)
+    {
+        print "\n   ";
+        $c = 0;
+    }
+}
+print "\n";

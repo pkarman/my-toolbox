@@ -7,7 +7,7 @@ use warnings;
 # is php or perl or ruby.
 #
 
-use File::Slurp;
+use File::Slurp::Tiny qw( read_file );
 
 if ( !@ARGV ) {
     die "$0 filename\n";

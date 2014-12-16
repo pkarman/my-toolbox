@@ -1,0 +1,10 @@
+#!/bin/sh
+
+: ${HEROKU_PROD_APP:?"You must set HEROKU_PROD_APP env var in your .bashrc or .profile"}
+
+if [[ $# -eq 0 ]]; then
+  echo "Use the -h option to see help"
+  exit
+fi
+
+heroku "$@" -a $HEROKU_PROD_APP

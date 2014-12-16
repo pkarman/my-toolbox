@@ -7,7 +7,7 @@ use warnings;
 # is php or perl or ruby.
 #
 
-use File::Slurp;
+use File::Slurp::Tiny qw( read_file );
 
 if ( !@ARGV ) {
     die "$0 filename\n";
@@ -64,7 +64,7 @@ sub is_perl {
 sub is_ruby {
     my $buf  = shift;
     my $file = shift;
-    if ( $file =~ m/\.rb$/ ) {
+    if ( $file =~ m/\.(rake|rb)$/ ) {
         return 1;
     }
     if ( $buf =~ m!/bin/ruby! ) {
@@ -97,6 +97,6 @@ sub run_php_tidy {
 
 sub run_ruby_tidy {
     my $file = shift;
-    run("rtidy $file");
+    run("rbeautify $file > $file.tdy && mv $file.tdy $file");
 }
 

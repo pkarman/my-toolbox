@@ -13,14 +13,16 @@ if ( !$proper_name or !$old_pass ) {
     die "Can't find credentials in $ENV{HOME}/.w/";
 }
 
+my $mpr_dot_org = '10.2.2.10';
 my $BASE_DN = 'DC=mpr,DC=org';
-my $AD_IP   = 'ldap://mpr.org:389';
+my $AD_IP   = "ldap://$mpr_dot_org:389";
 my $ldap    = Net::LDAP->new($AD_IP);
 $ldap or die "can't connect to LDAP: $!";
 
 # mangle the CN value
 my $cn = $proper_name;
 $cn =~ s/^(.+)\ +(.+)$/$2\\, $1/;
+#warn "cn=$cn pass=$old_pass\n";
 my $mesg = $ldap->bind(
     dn       => "CN=$cn,OU=Minnesota,OU=People,$BASE_DN",
     password => $old_pass,

@@ -1,6 +1,10 @@
 #!/bin/sh
 
-: ${HEROKU_STAGE_APP:?"You must set HEROKU_STAGE_APP env var in your .bashrc or .profile"}
+if [ -e ".heroku-stage" ]; then
+  HEROKU_STAGE_APP=`cat .heroku-stage`
+else
+  : ${HEROKU_STAGE_APP:?"You must set HEROKU_STAGE_APP env var in your .bashrc or .profile"}
+fi
 
 if [[ $# -eq 0 ]]; then
   echo "Use the -h option to see help"

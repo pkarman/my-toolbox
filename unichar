@@ -1,4 +1,4 @@
-#!/usr/bin/perl -C
+#!/usr/bin/env perl
 
 binmode STDOUT, ":utf8";
 $pat = "@ARGV";

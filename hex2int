@@ -1,0 +1,7 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+
+for my $hex (@ARGV) {
+    printf "%s => %d\n", $hex, hex $hex;
+}

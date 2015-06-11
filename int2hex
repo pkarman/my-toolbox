@@ -1,0 +1,7 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+
+for my $int (@ARGV) {
+    printf "%d => %x\n", $int, $int;
+}

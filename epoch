@@ -1,0 +1,6 @@
+#!/usr/bin/env perl 
+
+chomp( @ARGV = <STDIN> ) unless @ARGV;
+for my $e (@ARGV) {
+    print scalar localtime($e), $/;
+}

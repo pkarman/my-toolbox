@@ -7,10 +7,12 @@ printf("%s\n", random_str(@ARGV));
 
 sub random_str {
     my $n = shift || 12;
+    my $specials = shift || 0;
     if ( $n =~ m/\D/ ) {
         croak "error: 'n' must be a positive integer, not $n";
     }
     my @chars = ( "A" .. "N", "P" .. "Z", "a" .. "k", "m" .. "z", 0 .. 9, '.' );
+    push @chars, '!', '?', '(', ')', '*', ';' if $specials;
     return join( "", @chars[ map { rand @chars } ( 1 .. $n ) ] );
 }
 

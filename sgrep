@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 my $arg = join(' ', map { m/\s/ ? qq/'$_'/ : $_ } @ARGV);
-my $cmd = "grep -r --exclude=.phptidybak $arg | grep -v .svn | grep -v .git"; 
+my $cmd = "grep -r --exclude-dir=.git --exclude-dir=.svn --exclude=.phptidybak $arg"; 
 warn $cmd , $/;
 system("$cmd");
 

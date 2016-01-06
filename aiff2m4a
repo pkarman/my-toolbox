@@ -1,0 +1,13 @@
+#!/bin/sh
+
+if [[ $# -eq 0 ]]; then
+  echo "$0 <file.aiff>"
+  exit
+fi
+
+AIF=$1
+M4A=`echo $AIF | sed -e 's/\.aiff/.m4a/'`
+
+echo "$AIF => $M4A"
+
+#afconvert $AIF -o $M4A -q 127 -b 128000 -f m4af -d aac

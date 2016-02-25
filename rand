@@ -10,7 +10,7 @@ sub random_str {
     if ( $n =~ m/\D/ ) {
         croak "error: 'n' must be a positive integer, not $n";
     }
-    my @chars = ( "A" .. "N", "P" .. "Z", "a" .. "k", "m" .. "z", 0 .. 9, '.' );
+    my @chars = ( "A" .. "N", "P" .. "Z", "a" .. "k", "m" .. "z", 0 .. 9, '.', '!', '?', '+' );
     return join( "", @chars[ map { rand @chars } ( 1 .. $n ) ] );
 }
 

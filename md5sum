@@ -8,12 +8,13 @@ for my $md5file (@ARGV) {
     my ($orig) = ( $md5file =~ m/(.+)\.md5$/ );
     chomp( my $md5   = `md5 -r $orig` );
     chomp( my $check = `cat $md5file` );
-    $md5 =~ s/\s+//g;
-    $check =~ s/\s+//g;
+    $md5 =~ s/\s+.+//g;
+    $check =~ s/\s+.+//g;
     if ( $md5 eq $check ) {
-        print "$orig OK\n";
+        print "signatures match: $md5\n$orig OK\n";
     }
     else {
+        print "signatures do not match:\n";
         print "MD5: $md5\n";
         print "SIG: $check\n";
     }

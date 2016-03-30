@@ -11,7 +11,7 @@ for my $md5file (@ARGV) {
     $md5 =~ s/\s+.+//g;
     $check =~ s/\s+.+//g;
     if ( $md5 eq $check ) {
-        print "signatures match: $md5\n$orig OK\n";
+        print "signatures match: $md5\n$orig: OK\n";
     }
     else {
         print "signatures do not match:\n";

@@ -1,0 +1,13 @@
+#!/bin/sh
+
+if [[ $# -lt 2 ]]; then
+  echo "cffetch <appname> <filename>"
+  exit
+fi
+
+APPNAME=$1
+FILENAME=$2
+
+echo "Fetching $FILENAME..."
+cf files $APPNAME app/$FILENAME | tail -n +4 > $FILENAME
+echo "Done"

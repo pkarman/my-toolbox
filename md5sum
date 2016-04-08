@@ -1,0 +1,21 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+for my $md5file (@ARGV) {
+    next if $md5file =~ m/^-/;
+    my ($orig) = ( $md5file =~ m/(.+)\.md5$/ );
+    chomp( my $md5   = `md5 -r $orig` );
+    chomp( my $check = `cat $md5file` );
+    $md5 =~ s/\s+.+//g;
+    $check =~ s/\s+.+//g;
+    if ( $md5 eq $check ) {
+        print "signatures match: $md5\n$orig: OK\n";
+    }
+    else {
+        print "signatures do not match:\n";
+        print "MD5: $md5\n";
+        print "SIG: $check\n";
+    }
+}

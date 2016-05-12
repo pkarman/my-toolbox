@@ -3,9 +3,21 @@
 use strict;
 use warnings;
 
+unless ( $^O =~ m/darwin/i ) {
+    exec "/usr/bin/md5sum", @ARGV;
+}
+
 for my $md5file (@ARGV) {
     next if $md5file =~ m/^-/;
+    unless (-r $md5file) {
+        warn "No such file $md5file";
+        next;
+    }
     my ($orig) = ( $md5file =~ m/(.+)\.md5$/ );
+    unless (-r $orig) {
+        warn "No signature file $orig";
+        next;
+    }
     chomp( my $md5   = `md5 -r $orig` );
     chomp( my $check = `cat $md5file` );
     $md5 =~ s/\s+.+//g;

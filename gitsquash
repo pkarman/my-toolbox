@@ -1,0 +1,30 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+use Path::Tiny;
+
+my $usage = "$0 num-revisions-to-squash";
+my $numsquash = shift(@ARGV) or die "$usage\n";
+
+# get history, pull out relevant message.
+my @gitlog = `git log -n $numsquash --format=--%H%n%B`;
+my @log_entries = split(/--\w+\n/, join('', @gitlog));
+my $commit_msg = pop @log_entries;
+my $commit_msg_file = path("/tmp/$$.commit.msg");
+$commit_msg_file->spew($commit_msg);
+
+# squash
+run_it("git reset --soft HEAD~$numsquash");
+
+# commit
+run_it("git commit -a -F $commit_msg_file");
+
+# clean up
+$commit_msg_file->remove;
+
+sub run_it {
+    my ($cmd) = @_;
+    system($cmd) and die "$cmd failed: $!";
+}
+

@@ -1,0 +1,70 @@
+#!/usr/bin/env perl
+#
+# CLI for the Lawrence Public Library bibliocommons site.
+# Current features:
+#  * list all checked out books for a user
+#
+# Create a ~/.lfk-library.yml file with entries
+# for each user credential set you want to query.
+#
+# Released to public domain by author Peter Karman, 2016.
+
+use strict;
+use warnings;
+use v5.10;
+use Carp;
+use Data::Dump qw( dump );
+use WWW::Mechanize;
+use YAML::Tiny;
+use HTML::TreeBuilder::XPath;
+
+my $usage = "$0 libraryuser\n";
+die $usage unless @ARGV;
+
+my $conf_file = "$ENV{HOME}/.lfk-library.yml";
+my $config    = YAML::Tiny->read($conf_file)->[0];
+
+for my $who (@ARGV) {
+    my $www = WWW::Mechanize->new;
+
+    $www->get('http://lawrence.bibliocommons.com/user/login');
+
+    $www->submit_form(
+        form_number => 3,
+        fields      => {
+            name     => $config->{$who}->{username},
+            user_pin => $config->{$who}->{password}
+        }
+    );
+
+    unless ( $www->success ) {
+        die "Failed to authenticate: " . $www->status;
+    }
+
+    $www->get('http://lawrence.bibliocommons.com/checkedout');
+
+    my $html_tree
+        = HTML::TreeBuilder::XPath->new_from_content( $www->content );
+    my $checked_out
+        = $html_tree->findnodes('//div[contains(@class, "listItem")]');
+
+    my $count = 0;
+    for my $item ( $checked_out->get_nodelist ) {
+        say "=" x 80;
+        say ++$count;
+
+        #say $item->as_HTML;
+        my $biblio = $item->find_by_attribute( 'class', 'primary_bib_info' );
+
+        #say $biblio->as_HTML;
+        my $title = $biblio->look_down( '_tag' => 'a' )->as_trimmed_text;
+        say $title;
+        my $due = $item->find_by_attribute( 'class', 'checkedout_due_date' );
+
+        #say $due->as_HTML;
+        my $duedate
+            = $due->find_by_attribute( 'class', 'checkedout_status out' )
+            ->as_trimmed_text( extra_chars => '\xA0' );
+        say $duedate;
+    }
+}

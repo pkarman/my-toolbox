@@ -43,9 +43,11 @@ my $base_url        = 'https://lawrence.bibliocommons.com';
 my $login_url       = "$base_url/user/login";
 my $checked_out_url = "$base_url/checkedout";
 
-for my $who (@patrons) {
-    my $www = WWW::Mechanize->new;
+###########################################################################
+# functions
 
+sub login {
+    my ( $www, $who ) = @_;
     $www->get($login_url);
 
     $www->submit_form(
@@ -59,16 +61,20 @@ for my $who (@patrons) {
     unless ( $www->success ) {
         die "Failed to authenticate: " . $www->status;
     }
+}
 
+sub checked_out_items {
+    my ($www) = @_;
     $www->get($checked_out_url);
 
     my $html_tree
         = HTML::TreeBuilder::XPath->new_from_content( $www->content );
-    my $checked_out
-        = $html_tree->findnodes('//div[contains(@class, "listItem")]');
+    return $html_tree->findnodes('//div[contains(@class, "listItem")]');
+}
 
+sub build_report_table {
+    my ( $www, $checked_out ) = @_;
     my $count = 0;
-    say $who;
     my @rows = ( [ '#', 'Title', 'Due Date', 'Holds' ] );
     push @{ $rows[0] }, 'Renewed' if $RENEW;
     for my $item ( $checked_out->get_nodelist ) {
@@ -108,38 +114,50 @@ for my $who (@patrons) {
         {
             my $confirmation = prompt "renew $title (due $due_when)",
                 { anyone => [qw/y n/] };
-            unless ( $confirmation eq 'y' ) {
+            if ( $confirmation eq 'n' ) {
                 push @$row, 'skipped renewal';
             }
+            elsif ( renew_item( $www, $item ) ) {
+                push @$row, 'renewed';
+            }
             else {
-                my $renewal_link = $item->find_by_attribute( 'class',
-                    'btn btn-link single_circ_action' );
-
-                #say $renewal_link->as_HTML;
-                my $renewal_url = $base_url . $renewal_link->attr('href');
-
-                #say $renewal_url;
-                my $resp = $www->get($renewal_url);
-
-                #say $resp->decoded_content;
-                my $renewal_meta = decode_json $resp->decoded_content;
-                $www->update_html( $renewal_meta->{html} );
-                $www->submit_form();
-                if ( $www->success ) {
-                    push @$row, 'renewed';
-                }
-                else {
-                    push @$row, 'renewal failed';
-                }
+                push @$row, 'renewal failed';
             }
         }
         push @rows, $row;
     }
+    return \@rows;
+}
 
-    next unless @rows > 1;
+sub renew_item {
+    my ( $www, $item ) = @_;
+    my $renewal_link = $item->find_by_attribute( 'class',
+        'btn btn-link single_circ_action' );
 
+    #say $renewal_link->as_HTML;
+    my $renewal_url = $base_url . $renewal_link->attr('href');
+
+    #say $renewal_url;
+    my $resp = $www->get($renewal_url);
+
+    #say $resp->decoded_content;
+    my $renewal_meta = decode_json $resp->decoded_content;
+    $www->update_html( $renewal_meta->{html} );
+    $www->submit_form();
+    return $www->success;
+}
+
+#########################################################################
+# main loop
+for my $who (@patrons) {
+    my $www = WWW::Mechanize->new;
+    login( $www, $who );
+    my $checked_out = checked_out_items($www);
+    my $rows = build_report_table( $www, $checked_out );
+    say $who;
+    next unless @$rows > 1;
     print Text::Table::Any::table(
-        rows       => \@rows,
+        rows       => $rows,
         header_row => 1,
         backend    => 'Text::Table::Tiny'
     );

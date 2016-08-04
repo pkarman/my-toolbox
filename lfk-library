@@ -14,20 +14,39 @@ use warnings;
 use v5.10;
 use Carp;
 use Data::Dump qw( dump );
+use Getopt::Long;
 use WWW::Mechanize;
 use YAML::Tiny;
 use HTML::TreeBuilder::XPath;
+use Text::Table::Any;
+use JSON;
+use IO::Prompt::Simple;
 
-my $usage = "$0 libraryuser\n";
-die $usage unless @ARGV;
+my $usage = "$0 [opts] [libraryuser]\n";
+my $CHECK_ALL;
+my $RENEW;
+my $VERBOSE;
+GetOptions(
+    "all"     => \$CHECK_ALL,
+    "renew"   => \$RENEW,
+    "verbose" => \$VERBOSE
+) or die $usage;
+
+die $usage unless $CHECK_ALL or @ARGV;
 
 my $conf_file = "$ENV{HOME}/.lfk-library.yml";
 my $config    = YAML::Tiny->read($conf_file)->[0];
 
-for my $who (@ARGV) {
+my @patrons = $CHECK_ALL ? ( keys %$config ) : @ARGV;
+
+my $base_url        = 'https://lawrence.bibliocommons.com';
+my $login_url       = "$base_url/user/login";
+my $checked_out_url = "$base_url/checkedout";
+
+for my $who (@patrons) {
     my $www = WWW::Mechanize->new;
 
-    $www->get('http://lawrence.bibliocommons.com/user/login');
+    $www->get($login_url);
 
     $www->submit_form(
         form_number => 3,
@@ -41,7 +60,7 @@ for my $who (@ARGV) {
         die "Failed to authenticate: " . $www->status;
     }
 
-    $www->get('http://lawrence.bibliocommons.com/checkedout');
+    $www->get($checked_out_url);
 
     my $html_tree
         = HTML::TreeBuilder::XPath->new_from_content( $www->content );
@@ -49,22 +68,72 @@ for my $who (@ARGV) {
         = $html_tree->findnodes('//div[contains(@class, "listItem")]');
 
     my $count = 0;
+    say $who;
+    my @rows = ( [ '#', 'Title', 'Due Date', 'Holds' ] );
+    push @{ $rows[0] }, 'Renewed' if $RENEW;
     for my $item ( $checked_out->get_nodelist ) {
-        say "=" x 80;
-        say ++$count;
 
         #say $item->as_HTML;
         my $biblio = $item->find_by_attribute( 'class', 'primary_bib_info' );
 
         #say $biblio->as_HTML;
         my $title = $biblio->look_down( '_tag' => 'a' )->as_trimmed_text;
-        say $title;
-        my $due = $item->find_by_attribute( 'class', 'checkedout_due_date' );
 
-        #say $due->as_HTML;
+        #say $title;
+
+        my $pending_holds
+            = $item->find_by_attribute( 'class', 'checkedout_num_waiting' );
+        $pending_holds = $pending_holds->as_trimmed_text if $pending_holds;
+
+        my $due_div
+            = $item->find_by_attribute( 'class', 'checkedout_due_date' );
+
+        #say $due_div->as_HTML;
         my $duedate
-            = $due->find_by_attribute( 'class', 'checkedout_status out' )
-            ->as_trimmed_text( extra_chars => '\xA0' );
-        say $duedate;
+            = $due_div->find_by_attribute( 'class', 'checkedout_status out' );
+        my $duedate_soon = $due_div->find_by_attribute( 'class',
+            'checkedout_status coming_due' );
+        my $due = $duedate || $duedate_soon;
+        my $due_when = $due->as_trimmed_text( extra_chars => '\xA0' );
+
+        #say $due_when;
+
+        my $row = [ ++$count, $title, $due_when, $pending_holds ];
+
+        if ( !$pending_holds && $RENEW && $duedate_soon ) {
+            my $confirmation = prompt "renew $title (due $due_when)",
+                { anyone => [qw/y n/] };
+            unless ( $confirmation eq 'y' ) {
+                push @$row, 'skipped renewal';
+            }
+            else {
+                my $renewal_link = $item->find_by_attribute( 'class',
+                    'btn btn-link single_circ_action' );
+
+                #say $renewal_link->as_HTML;
+                my $renewal_url = $base_url . $renewal_link->attr('href');
+
+                #say $renewal_url;
+                my $resp = $www->get($renewal_url);
+
+                #say $resp->decoded_content;
+                my $renewal_meta = decode_json $resp->decoded_content;
+                $www->update_html( $renewal_meta->{html} );
+                $www->submit_form();
+                if ( $www->success ) {
+                    push @$row, 'renewed';
+                }
+                else {
+                    push @$row, 'renewal failed';
+                }
+            }
+        }
+        push @rows, $row;
     }
+
+    print Text::Table::Any::table(
+        rows       => \@rows,
+        header_row => 1,
+        backend    => 'Text::Table::Tiny'
+    );
 }

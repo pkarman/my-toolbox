@@ -27,7 +27,7 @@ use Text::Table::Any;
 use JSON;
 use IO::Prompt::Simple;
 
-my $usage = "$0 [opts] [libraryuser]\n";
+my $usage = "$0 [--all | patron_name] [--renew]\n";
 my $CHECK_ALL;
 my $RENEW;
 my $VERBOSE;

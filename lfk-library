@@ -131,6 +131,8 @@ for my $who (@patrons) {
         push @rows, $row;
     }
 
+    next unless @rows > 1;
+
     print Text::Table::Any::table(
         rows       => \@rows,
         header_row => 1,

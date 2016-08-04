@@ -93,14 +93,19 @@ for my $who (@patrons) {
             = $due_div->find_by_attribute( 'class', 'checkedout_status out' );
         my $duedate_soon = $due_div->find_by_attribute( 'class',
             'checkedout_status coming_due' );
-        my $due = $duedate || $duedate_soon;
+        my $duedate_overdue = $due_div->find_by_attribute( 'class',
+            'checkedout_status overdue' );
+        my $due = $duedate || $duedate_soon || $duedate_overdue;
         my $due_when = $due->as_trimmed_text( extra_chars => '\xA0' );
 
         #say $due_when;
 
         my $row = [ ++$count, $title, $due_when, $pending_holds ];
 
-        if ( !$pending_holds && $RENEW && $duedate_soon ) {
+        if (  !$pending_holds
+            && $RENEW
+            && ( $duedate_soon || $duedate_overdue ) )
+        {
             my $confirmation = prompt "renew $title (due $due_when)",
                 { anyone => [qw/y n/] };
             unless ( $confirmation eq 'y' ) {

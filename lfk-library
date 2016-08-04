@@ -6,6 +6,11 @@
 #
 # Create a ~/.lfk-library.yml file with entries
 # for each user credential set you want to query.
+# Example:
+# --
+# patron_name:
+#   username: foo
+#   password: bar
 #
 # Released to public domain by author Peter Karman, 2016.
 

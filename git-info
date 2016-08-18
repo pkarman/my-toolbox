@@ -14,7 +14,9 @@ while [ ! -d .git ] && [ ! `pwd` = "/" ]; do cd ..; done
 
 # Show various information about this git directory
 if [ -d .git ]; then
-  echo "== Remote URL: `git remote -v`"
+  echo "== Remote URLs: "
+  git remote -v
+  echo
 
   echo "== Remote Branches: "
   git branch -r

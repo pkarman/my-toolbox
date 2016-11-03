@@ -1,0 +1,15 @@
+#!/bin/sh
+
+if [[ $# -lt 2 ]]; then
+  echo "bisect-test <good-shasum> <path/to/rspec>"
+  exit
+fi
+
+GOOD_SHA=$1
+RSPEC_FILE=$2
+
+git bisect start
+git bisect good $GOOD_SHA
+git bisect bad
+git bisect run ./test.sh $RSPEC_FILE
+git bisect reset

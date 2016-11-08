@@ -1,0 +1,17 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+
+sub try {
+    my ($cmd) = @_;
+    print "cmd:$cmd:\n";
+    system($cmd) and die "$cmd failed: $!";
+}
+
+die "$0 cmd\n" unless @ARGV;
+
+my $cmd = join ' ', @ARGV;
+
+while (1) {
+    try($cmd);
+}

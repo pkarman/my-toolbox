@@ -31,9 +31,11 @@ my $usage = "$0 [--all | patron_name] [--renew]\n";
 my $CHECK_ALL;
 my $RENEW;
 my $VERBOSE;
+my $PROMPT = 1;
 GetOptions(
     "all"     => \$CHECK_ALL,
     "renew"   => \$RENEW,
+    "prompt!" => \$PROMPT,
     "verbose" => \$VERBOSE
 ) or die $usage;
 
@@ -117,8 +119,14 @@ sub build_report_table {
             && $RENEW
             && ( $duedate_soon || $duedate_overdue ) )
         {
-            my $confirmation = prompt "renew $title (due $due_when)",
-                { anyone => [qw/y n/] };
+            my $confirmation;
+            if ($PROMPT) {
+                $confirmation = prompt "renew $title (due $due_when)",
+                    { anyone => [qw/y n/] };
+            }
+            else {
+                $confirmation = 'y';
+            }
             if ( $confirmation eq 'n' ) {
                 push @$row, 'skipped renewal';
             }

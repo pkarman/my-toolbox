@@ -1,0 +1,20 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+use JSON;
+use Data::Dump qw( dump );
+
+while (<>) {
+    chomp;
+    my $entry = decode_json($_);
+    print pretty($entry);
+}
+
+sub pretty {
+    my $entry = shift;
+    sprintf(
+        "[%s] %s [%s] %s\n",
+        $entry->{'@timestamp'}, $entry->{'severity'},
+        $entry->{'host'},       $entry->{'message'}
+    );
+}

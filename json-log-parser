@@ -2,19 +2,79 @@
 use strict;
 use warnings;
 use JSON;
+use Try::Tiny;
 use Data::Dump qw( dump );
 
 while (<>) {
-    chomp;
-    my $entry = decode_json($_);
-    print pretty($entry);
+    my $line = $_;
+    #print STDOUT $line;
+    chomp $line;
+    try {
+        my $entry = decode_json($line);
+        print STDOUT pretty($entry);
+    }
+    catch {
+        print STDOUT "$line\n";
+    };
 }
 
 sub pretty {
     my $entry = shift;
+    if ( $entry->{'message'} ) {
+        format_message($entry);
+    }
+    elsif ( $entry->{'event'} ) {
+        format_event($entry);
+    }
+    elsif ( $entry->{'method'} ) {
+        format_http($entry);
+    }
+    else {
+        dump($entry);
+    }
+}
+
+sub format_message {
+    my $entry = shift;
     sprintf(
         "[%s] %s [%s] %s\n",
-        $entry->{'@timestamp'}, $entry->{'severity'},
-        $entry->{'host'},       $entry->{'message'}
+        entry_value( $entry, '@timestamp' ),
+        entry_value( $entry, 'severity' ),
+        entry_value( $entry, 'host' ),
+        entry_value( $entry, 'message' ),
     );
+}
+
+sub format_event {
+    my $entry = shift;
+    sprintf(
+        "[%s] %s [%s] %s %s\n",
+        entry_value( $entry, '@timestamp' ),
+        entry_value( $entry, 'severity' ),
+        entry_value( $entry, 'host' ),
+        entry_value( $entry, 'event' ),
+        entry_value( $entry, 'type' ),
+    );
+}
+
+sub format_http {
+    my $entry = shift;
+    sprintf(
+        "[%s] %s [%s] %s %s\@ %s [%s.%s] %s [%s]\n",
+        entry_value( $entry, '@timestamp' ),
+        entry_value( $entry, 'severity' ),
+        entry_value( $entry, 'host' ),
+        entry_value( $entry, 'method' ),
+        entry_value( $entry, 'user_id' ),
+        entry_value( $entry, 'path' ),
+        entry_value( $entry, 'controller' ),
+        entry_value( $entry, 'action' ),
+        entry_value( $entry, 'status' ),
+        entry_value( $entry, 'duration' ),
+    );
+}
+
+sub entry_value {
+    my ( $entry, $key ) = @_;
+    $entry->{$key} || '';
 }

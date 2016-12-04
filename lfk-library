@@ -90,13 +90,39 @@ sub build_report_table {
         my $biblio = $item->find_by_attribute( 'class', 'primary_bib_info' );
 
         #say $biblio->as_HTML;
-        my $title = $biblio->look_down( '_tag' => 'a' )->as_trimmed_text;
+        my $item_link = $biblio->look_down( '_tag' => 'a' );
+        my $title = $item_link->as_trimmed_text;
 
         #say $title;
 
         my $pending_holds
             = $item->find_by_attribute( 'class', 'checkedout_num_waiting' );
-        $pending_holds = $pending_holds->as_trimmed_text if $pending_holds;
+        if ($pending_holds) {
+            $pending_holds = $pending_holds->as_trimmed_text;
+        }
+        else {
+        # some caching bug on site prevents holds from always showing up
+        # on the summary list page. So check the item subscription stats page.
+            my $href = $item_link->attr('href');
+            my ($item_id) = ( $href =~ m,/item/show/(\d+)_, );
+
+            #say $href;
+            #say $item_id;
+            my $url = sprintf( "%s/item/show_circulation_widget/%s.json",
+                $base_url, $item_id );
+
+            #say $url;
+            my $resp      = $www->get($url);
+            my $resp_meta = decode_json $resp->decoded_content;
+            my $tree      = HTML::TreeBuilder::XPath->new_from_content(
+                $resp_meta->{'html'} );
+            my $holds
+                = $tree->find_by_attribute( 'testid', 'text_holdcopies' )
+                ->as_trimmed_text;
+
+            #say "holds: $holds";
+            $pending_holds = $holds if $holds;
+        }
 
         my $due_div
             = $item->find_by_attribute( 'class', 'checkedout_due_date' );

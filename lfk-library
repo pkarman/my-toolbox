@@ -32,7 +32,9 @@ my $CHECK_ALL;
 my $RENEW;
 my $VERBOSE;
 my $PROMPT = 1;
+my $HTML;
 GetOptions(
+    'html'    => \$HTML,
     "all"     => \$CHECK_ALL,
     "renew"   => \$RENEW,
     "prompt!" => \$PROMPT,
@@ -52,6 +54,11 @@ my $checked_out_url = "$base_url/checkedout";
 
 ###########################################################################
 # functions
+
+sub table_backend {
+    return 'Text::Table::HTML' if $HTML;
+    return 'Text::Table::Tiny';
+}
 
 sub login {
     my ( $www, $who ) = @_;
@@ -117,8 +124,8 @@ sub build_report_table {
             my $tree      = HTML::TreeBuilder::XPath->new_from_content(
                 $resp_meta->{'html'} );
             my $holds
-                = $tree->find_by_attribute( 'testid', 'text_holdcopies' )
-                ->as_trimmed_text;
+                = $tree->find_by_attribute( 'testid', 'text_holdcopies' );
+            $holds = $holds->as_trimmed_text if $holds;
 
             #say "holds: $holds";
             $pending_holds = $holds if $holds;
@@ -188,6 +195,7 @@ sub renew_item {
 
 #########################################################################
 # main loop
+print "LFK Library Report\n" if $HTML;
 for my $who (@patrons) {
     my $www = WWW::Mechanize->new;
     login( $www, $who );
@@ -198,6 +206,6 @@ for my $who (@patrons) {
     print Text::Table::Any::table(
         rows       => $rows,
         header_row => 1,
-        backend    => 'Text::Table::Tiny'
+        backend    => table_backend(),
     );
 }

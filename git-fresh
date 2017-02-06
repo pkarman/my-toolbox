@@ -3,7 +3,7 @@ pushd . >/dev/null
 # Find base of git directory
 while [ ! -d .git ] && [ ! `pwd` = "/" ]; do cd ..; done
 
-# Show various information about this git directory
+# pull latest master, clean up old branches
 if [ -d .git ]; then
   git checkout master
   git pull

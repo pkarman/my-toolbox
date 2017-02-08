@@ -1,4 +1,4 @@
 #!/bin/sh
 
-reek $@
-rubocop $@
+bundle exec reek $@
+bundle exec rubocop $@

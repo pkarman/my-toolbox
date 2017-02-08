@@ -30,7 +30,7 @@ sub pretty {
         format_http($entry);
     }
     else {
-        dump($entry);
+        dump($entry) . "\n";
     }
 }
 

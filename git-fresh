@@ -1,0 +1,14 @@
+pushd . >/dev/null
+
+# Find base of git directory
+while [ ! -d .git ] && [ ! `pwd` = "/" ]; do cd ..; done
+
+# pull latest master, clean up old branches
+if [ -d .git ]; then
+  git checkout master
+  git pull
+  git remote prune origin
+  git branch -vv | grep ': gone]' | awk '{print $1}' | xargs git branch -D
+else
+  echo "Not a git repository."
+fi

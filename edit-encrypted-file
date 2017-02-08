@@ -1,0 +1,24 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+
+my $usage      = "$0 file";
+my $file       = shift(@ARGV) or die $usage;
+my $plain_file = $file;
+$plain_file =~ s/\.gpg$//;
+
+die "bad input file name: $file" if $file eq $plain_file;
+
+my $decrypt = 'gpg -o - ';
+my $encrypt = "gpg -e -r $ENV{GPG_EMAIL}";
+
+sub run {
+    my $cmd = shift;
+    print $cmd, "\n";
+    system($cmd) and die "$cmd failed: $!";
+}
+
+run("$decrypt $file > $plain_file");
+run("vi $plain_file");
+run("$encrypt $plain_file");
+run("rm -f $plain_file");

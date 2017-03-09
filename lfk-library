@@ -13,6 +13,13 @@
 #   password: bar
 #
 # Released to public domain by author Peter Karman, 2016.
+#
+# Installation requires:
+#
+# % cpan WWW::Mechanize YAML::Tiny HTML::TreeBuilder::XPath
+# % cpan Text::Table::Any JSON IO::Prompt::Simple
+# % cpan LWP::Protocol::https Text::Table::HTML
+
 
 use strict;
 use warnings;
@@ -195,13 +202,13 @@ sub renew_item {
 
 #########################################################################
 # main loop
-print "LFK Library Report\n" if $HTML;
+say "<h1>LFK Library Report</h1>" if $HTML;
 for my $who (@patrons) {
     my $www = WWW::Mechanize->new;
     login( $www, $who );
     my $checked_out = checked_out_items($www);
     my $rows = build_report_table( $www, $checked_out );
-    say $who;
+    say $HTML ? "<h2>$who</h2>" : $who;
     next unless @$rows > 1;
     print Text::Table::Any::table(
         rows       => $rows,

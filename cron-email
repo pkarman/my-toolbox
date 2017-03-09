@@ -13,6 +13,8 @@ while (<>) {
     chomp( $first_line ||= $_ );
 }
 
+$first_line =~ s/<.+?>//g;
+
 Email::Stuffer->to( $ENV{MAILTO} )->from( $ENV{EMAIL} )
     ->subject( $ENV{SUBJECT} || $first_line )->html_body($buf)->send;
 

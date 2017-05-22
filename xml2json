@@ -1,0 +1,20 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+use XML::Simple qw( :strict );
+use File::Slurper qw( read_text write_text );
+use JSON;
+use Data::Dump qw( dump );
+
+my $converter = JSON->new->utf8->pretty;
+
+for my $file (@ARGV) {
+    my $xml = read_text($file);
+    my $ref = XMLin( $xml, ForceArray => 0, KeyAttr => [] );
+
+    #print dump $ref;
+    my $json      = $converter->encode($ref);
+    my $json_file = $file;
+    $json_file =~ s/\.xml/.json/i;
+    write_text( $json_file, $json );
+}

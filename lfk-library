@@ -20,7 +20,6 @@
 # % cpan Text::Table::Any Text::Table::Tiny JSON IO::Prompt::Simple
 # % cpan LWP::Protocol::https Text::Table::HTML
 
-
 use strict;
 use warnings;
 use v5.10;
@@ -108,7 +107,7 @@ sub build_report_table {
 
         #say $biblio->as_HTML;
         my $item_link = $biblio->look_down( '_tag' => 'a' );
-        if (!$item_link) {
+        if ( !$item_link ) {
             say "No item link for " . $item->as_HTML;
             next;
         }
@@ -201,8 +200,12 @@ sub renew_item {
     #say $renewal_url;
     my $resp = $www->get($renewal_url);
 
-    #say $resp->decoded_content;
-    my $renewal_meta = decode_json $resp->decoded_content;
+    my $response = $resp->decoded_content;
+
+    #say $response;
+    return if $response =~ /overdrive\.com/;
+
+    my $renewal_meta = decode_json $response;
     $www->update_html( $renewal_meta->{html} );
     $www->submit_form();
     return $www->success;

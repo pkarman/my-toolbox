@@ -207,7 +207,16 @@ sub renew_item {
 
     my $renewal_meta = decode_json $response;
     $www->update_html( $renewal_meta->{html} );
-    $www->submit_form();
+    $response = $www->submit_form();
+    my $renewed_resp = $response->decoded_content;
+    if ( $renewed_resp
+        =~ m/This item has been renewed the maximum number of times allowed/ )
+    {
+        return 0;
+    }
+
+    #say $www->success;
+    #say $response->decoded_content;
     return $www->success;
 }
 

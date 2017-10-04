@@ -1,0 +1,3 @@
+#!/bin/sh
+
+perl -n -e 's/\t/","/g; print' < $@  | csv2json -s '","'

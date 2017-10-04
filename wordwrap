@@ -1,0 +1,11 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+
+use Text::Wrap;
+$Text::Wrap::columns = 72;
+
+while (<>) {
+    s/^>\ +//;
+    print wrap( '> ', '> ', $_ );
+}

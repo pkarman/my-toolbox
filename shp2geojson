@@ -1,0 +1,11 @@
+#!/usr/bin/env perl
+
+# ogr2ogr -f GeoJSON -t_srs crs:84 [name].geojson [name].shp
+
+my $usage = "$0 file.shp";
+my $shp_file = shift(@ARGV) or die $usage;
+( my $bare_file = $shp_file ) =~ s/\.shp$//;
+die $usage if $bare_file eq $shp_file;
+
+my $cmd = "ogr2ogr -f GeoJSON -t_srs crs:84 $bare_file.geojson $shp_file";
+system($cmd) and die "$cmd failed: $!";

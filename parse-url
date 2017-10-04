@@ -1,0 +1,18 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+use Data::Dump qw( dump );
+use URI::Split qw( uri_split );
+use URI::Query;
+
+for my $uri (@ARGV) {
+    my ( $scheme, $auth, $path, $query, $frag ) = uri_split($uri);
+    my $qq = URI::Query->new($query);
+    dump {
+        scheme => $scheme,
+        auth   => $auth,
+        path   => $path,
+        query  => { $qq->hash },
+        frag   => $frag,
+    };
+}

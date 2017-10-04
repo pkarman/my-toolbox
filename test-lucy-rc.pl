@@ -26,7 +26,7 @@ sub mirror_dir {
         dir => $dir,
         rc  => ( grep {m/\.tar.gz$/} @files )[0],
         md5 => ( grep {m/\.tar.gz.md5$/} @files )[0],
-        sha => ( grep {m/\.tar.gz.sha$/} @files )[0],
+        sha => ( grep {m/\.tar.gz.sha\d*$/} @files )[0],
         key => ( grep {m/\.tar.gz.asc$/} @files )[0],
     };
 }

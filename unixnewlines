@@ -1,0 +1,4 @@
+#!/bin/sh
+
+perl -pi -e 's/\r\n/\n/g' $@
+perl -pi -e 's/\r/\n/g' $@

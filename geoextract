@@ -11,7 +11,9 @@ for my $f (@ARGV) {
 my $field_str = join( ',', @fields );
 
 my @buf = `jq '.features[].properties | "$field_str"' < $file`;
+print lc(join(',', @ARGV)), "\n";
 for my $ln (@buf) {
     $ln =~ s/^"|"$//g;
+    $ln =~ s/\bnull\b//g;
     print $ln;
 }

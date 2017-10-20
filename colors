@@ -1,0 +1,19 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+use Term::ANSIColor;
+use v5.10;
+
+# we assume "black"
+my @colors = qw( red green yellow blue magenta cyan white );
+
+for my $color (@colors) {
+    my @perms = (
+        $color, "bright_${color}",
+        "bold ${color}",
+        "bold bright_${color}",
+    );
+    for my $perm (@perms) {
+        say colored( $perm, $perm );
+    }
+}

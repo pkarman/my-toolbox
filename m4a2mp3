@@ -5,6 +5,11 @@ use warnings;
 for my $m4a (@ARGV) {
     my $mp3 = $m4a;
     $mp3 =~ s/\.m4a/.mp3/;
-    my $cmd = "ffmpeg '$mp3' -i '$m4a' -codec:a libmp3lame -qscale:a 1";
+    if (-s $mp3) {
+      warn "$mp3 already exists -- skipping\n";
+      next;
+    }
+    my $cmd = qq{ffmpeg "$mp3" -i "$m4a" -codec:a libmp3lame -qscale:a 1};
+    print "$cmd\n";
     system($cmd) and die "$cmd failed: $!";
 }

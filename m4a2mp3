@@ -1,0 +1,10 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+
+for my $m4a (@ARGV) {
+    my $mp3 = $m4a;
+    $mp3 =~ s/\.m4a/.mp3/;
+    my $cmd = "ffmpeg '$mp3' -i '$m4a' -codec:a libmp3lame -qscale:a 1";
+    system($cmd) and die "$cmd failed: $!";
+}

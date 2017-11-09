@@ -1,1 +1,6 @@
-perl -e 'use MIME::Base64; chomp(my $p = <>); print decode_base64($p), $/;'
+#!/usr/bin/env perl
+use strict;
+
+use MIME::Base64;
+chomp(my $p = <>);
+print MIME::Base64::decode_base64url($p), $/;

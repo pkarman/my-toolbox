@@ -3,10 +3,12 @@ use strict;
 use warnings;
 use DateTime;
 use DateTime::Format::DateParse;
+use DateTime::Format::Mail;
 
 if ( !@ARGV ) { @ARGV = ( scalar localtime() ) }
 for my $str (@ARGV) {
     my $dt = DateTime::Format::DateParse->parse_datetime($str);
+    printf( "You said: %s\n", DateTime::Format::Mail->format_datetime($dt) );
     $dt->set_time_zone('UTC');
-    printf( "You said: %s  => UTC: %s\n", $str, $dt );
+    printf( "     UTC: %s\n", DateTime::Format::Mail->format_datetime($dt) );
 }

@@ -1,0 +1,27 @@
+#!/usr/bin/env ruby
+
+num_words = (ARGV[0] || 16).to_i
+file = '/usr/share/dict/words'
+total_words = `wc -l #{file}`
+random_line_nums = Array.new(num_words * 5) { rand(1...total_words.to_i) }
+
+words = []
+File.open(file) do |fh|
+  fh.each_with_index do |line, line_num|
+    next unless random_line_nums.include?(line_num)
+    words << line.chomp
+  end
+end
+
+words.shuffle!
+
+phrase = words.select {|word| word.length < 10 && word.length > 2 && !word.match(/[A-Z]/) }.sample(num_words)
+
+#puts "picked words: #{phrase.inspect}"
+
+phrase.each_with_index do |w, n|
+  print w
+  print ' '
+  puts if n % 4 == 0
+end
+puts

@@ -1,0 +1,6 @@
+#!/bin/sh
+
+file=$1
+nlines=${2:-2}
+
+gunzip -c $file | head -n $nlines | csv2json -s '	' | json_xs

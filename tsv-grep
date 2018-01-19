@@ -1,0 +1,12 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+
+my $usage   = "$0 pattern file";
+my $pattern = shift @ARGV or die $usage;
+my $file    = shift @ARGV or die $usage;
+
+my $header = `gunzip -c $file | head -n 1`;
+my $matches = join '', `zgrep $pattern $file`;
+
+print "$header$matches";

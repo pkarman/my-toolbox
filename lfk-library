@@ -40,14 +40,14 @@ my $RENEW;
 my $VERBOSE;
 my $PROMPT = 1;
 my $HTML;
-my $NOTICE;
+my $NOTIFY;
 GetOptions(
     'html'     => \$HTML,
     "all"      => \$CHECK_ALL,
     "renew"    => \$RENEW,
     "prompt!"  => \$PROMPT,
     "verbose"  => \$VERBOSE,
-    "notice=s" => \$NOTICE,
+    "notify=s" => \$NOTIFY,
 ) or die $usage;
 
 die $usage unless $CHECK_ALL or @ARGV;
@@ -64,18 +64,18 @@ my $checked_out_url = "$base_url/checkedout";
 my $TABLE_HEADER = [ '#', 'Title', 'Due Date', 'Holds' ];
 
 # global var for queuing overdue or due soon items
-my @NOTICE_QUEUE = ($TABLE_HEADER);
+my @NOTIFY_QUEUE = ($TABLE_HEADER);
 
 ###########################################################################
 # functions
 
-sub send_notice {
+sub notify {
     my $body = Text::Table::Any::table(
-        rows       => \@NOTICE_QUEUE,
+        rows       => \@NOTIFY_QUEUE,
         header_row => 1,
         backend    => table_backend(),
     );
-    Email::Stuffer->to($NOTICE)->from( $ENV{EMAIL} )
+    Email::Stuffer->to($NOTIFY)->from( $ENV{EMAIL} )
         ->subject( $ENV{SUBJECT} || 'LFK Library Due' )->html_body($body)
         ->send_or_die;
 }
@@ -114,7 +114,7 @@ sub checked_out_items {
 sub build_report_table {
     my ( $www, $checked_out ) = @_;
     my $count = 0;
-    my @rows  = ($TABLE_HEADER);
+    my @rows  = ([@$TABLE_HEADER]);
     push @{ $rows[0] }, 'Renewed' if $RENEW;
     for my $item ( $checked_out->get_nodelist ) {
 
@@ -181,11 +181,11 @@ sub build_report_table {
 
         my $row = [ ++$count, $title, $due_when, $pending_holds ];
 
-        if (   $NOTICE
+        if (   $NOTIFY
             && $pending_holds
             && ( $duedate_soon || $duedate_overdue ) )
         {
-            push @NOTICE_QUEUE, $row;
+            push @NOTIFY_QUEUE, $row;
         }
 
         if (  !$pending_holds
@@ -208,7 +208,7 @@ sub build_report_table {
             }
             else {
                 push @$row,         'renewal failed';
-                push @NOTICE_QUEUE, $row;
+                push @NOTIFY_QUEUE, $row;
             }
         }
         push @rows, $row;
@@ -264,6 +264,6 @@ for my $who (@patrons) {
     );
 }
 
-if ( $NOTICE && scalar(@NOTICE_QUEUE) > 1 ) {
-    send_notice();
+if ( $NOTIFY && scalar(@NOTIFY_QUEUE) > 1 ) {
+    notify();
 }

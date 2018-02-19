@@ -32,6 +32,7 @@ use HTML::TreeBuilder::XPath;
 use Text::Table::Any;
 use JSON;
 use IO::Prompt::Simple;
+use Email::Stuffer;
 
 my $usage = "$0 [--all | patron_name] [--renew]\n";
 my $CHECK_ALL;
@@ -39,12 +40,14 @@ my $RENEW;
 my $VERBOSE;
 my $PROMPT = 1;
 my $HTML;
+my $NOTIFY;
 GetOptions(
-    'html'    => \$HTML,
-    "all"     => \$CHECK_ALL,
-    "renew"   => \$RENEW,
-    "prompt!" => \$PROMPT,
-    "verbose" => \$VERBOSE
+    'html'     => \$HTML,
+    "all"      => \$CHECK_ALL,
+    "renew"    => \$RENEW,
+    "prompt!"  => \$PROMPT,
+    "verbose"  => \$VERBOSE,
+    "notify=s" => \$NOTIFY,
 ) or die $usage;
 
 die $usage unless $CHECK_ALL or @ARGV;
@@ -52,14 +55,30 @@ die $usage unless $CHECK_ALL or @ARGV;
 my $conf_file = "$ENV{HOME}/.lfk-library.yml";
 my $config    = YAML::Tiny->read($conf_file)->[0];
 
-my @patrons = $CHECK_ALL ? ( keys %$config ) : @ARGV;
+my @patrons = $CHECK_ALL ? ( sort keys %$config ) : @ARGV;
 
 my $base_url        = 'https://lawrence.bibliocommons.com';
 my $login_url       = "$base_url/user/login";
 my $checked_out_url = "$base_url/checkedout";
 
+my $TABLE_HEADER = [ '#', 'Title', 'Due Date', 'Holds' ];
+
+# global var for queuing overdue or due soon items
+my @NOTIFY_QUEUE = ($TABLE_HEADER);
+
 ###########################################################################
 # functions
+
+sub notify {
+    my $body = Text::Table::Any::table(
+        rows       => \@NOTIFY_QUEUE,
+        header_row => 1,
+        backend    => table_backend(),
+    );
+    Email::Stuffer->to($NOTIFY)->from( $ENV{EMAIL} )
+        ->subject( $ENV{SUBJECT} || 'LFK Library Due' )->html_body($body)
+        ->send_or_die;
+}
 
 sub table_backend {
     return 'Text::Table::HTML' if $HTML;
@@ -95,7 +114,7 @@ sub checked_out_items {
 sub build_report_table {
     my ( $www, $checked_out ) = @_;
     my $count = 0;
-    my @rows = ( [ '#', 'Title', 'Due Date', 'Holds' ] );
+    my @rows  = ([@$TABLE_HEADER]);
     push @{ $rows[0] }, 'Renewed' if $RENEW;
     for my $item ( $checked_out->get_nodelist ) {
 
@@ -162,6 +181,13 @@ sub build_report_table {
 
         my $row = [ ++$count, $title, $due_when, $pending_holds ];
 
+        if (   $NOTIFY
+            && $pending_holds
+            && ( $duedate_soon || $duedate_overdue ) )
+        {
+            push @NOTIFY_QUEUE, $row;
+        }
+
         if (  !$pending_holds
             && $RENEW
             && ( $duedate_soon || $duedate_overdue ) )
@@ -181,7 +207,8 @@ sub build_report_table {
                 push @$row, 'renewed';
             }
             else {
-                push @$row, 'renewal failed';
+                push @$row,         'renewal failed';
+                push @NOTIFY_QUEUE, $row;
             }
         }
         push @rows, $row;
@@ -235,4 +262,8 @@ for my $who (@patrons) {
         header_row => 1,
         backend    => table_backend(),
     );
+}
+
+if ( $NOTIFY && scalar(@NOTIFY_QUEUE) > 1 ) {
+    notify();
 }

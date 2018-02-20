@@ -7,6 +7,8 @@ use Data::Dump qw( dump );
 my $usage = "$0 release-candidate-url\n";
 my $release_candidate = shift(@ARGV) or die $usage;
 
+my $PERL = $^X;
+
 sub border {
     print '=' x 80, $/;
 }
@@ -79,12 +81,12 @@ sub test_clownfish {
     print "Build runtime/perl test finished for $pkg\n";
 
     if ( $ENV{INSTALL_CLOWNFISH} ) {
-        run("sudo perl Build install");
+        run("sudo $PERL Build install");
         chdir("../../compiler/perl")
             or die "can't chdir ../../compiler/perl: $!";
-        run("perl Build.PL");
-        run("perl Build test");
-        run("sudo perl Build install");
+        run("$PERL Build.PL");
+        run("$PERL Build test");
+        run("sudo $PERL Build install");
     }
 }
 

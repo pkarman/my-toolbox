@@ -7,3 +7,6 @@ if [ ! $NEW ]; then
 fi
 
 grep -lr 'VERSION = ' lib | grep -v .svn | xargs perl -pi -e "s/VERSION = '.+?'/VERSION = '$NEW'/"
+if [ -f dist.ini ]; then
+  perl -pi -e "s/version(\s+)= \S+/version\$1= $NEW/" dist.ini
+fi

@@ -1,4 +1,9 @@
 #!/bin/sh
 
-perl -pi -e 's/\r\n/\n/g' $@
-perl -pi -e 's/\r/\n/g' $@
+IFS=$'\n' 
+for file in $@; do
+  file=`echo $file | sed -e "s,\\\\\,\\\\\,g"`
+  echo file: $file
+  perl -pi -e 's/\r\n/\n/g' "$file"
+  perl -pi -e 's/\r/\n/g' "$file"
+done

@@ -18,7 +18,7 @@
 #
 # % cpan WWW::Mechanize YAML::Tiny HTML::TreeBuilder::XPath
 # % cpan Text::Table::Any Text::Table::Tiny JSON IO::Prompt::Simple
-# % cpan LWP::Protocol::https Text::Table::HTML
+# % cpan LWP::Protocol::https Text::Table::HTML Email::Stuffer
 
 use strict;
 use warnings;
@@ -58,8 +58,8 @@ my $config    = YAML::Tiny->read($conf_file)->[0];
 my @patrons = $CHECK_ALL ? ( sort keys %$config ) : @ARGV;
 
 my $base_url        = 'https://lawrence.bibliocommons.com';
-my $login_url       = "$base_url/user/login";
-my $checked_out_url = "$base_url/checkedout";
+my $login_url       = "$base_url/user/login?destination=https://lplks.org";
+my $checked_out_url = "$base_url/checkedout/index/out";
 
 my $TABLE_HEADER = [ '#', 'Title', 'Due Date', 'Holds' ];
 
@@ -90,7 +90,7 @@ sub login {
     $www->get($login_url);
 
     $www->submit_form(
-        form_number => 3,
+        form_number => 4,
         fields      => {
             name     => $config->{$who}->{username},
             user_pin => $config->{$who}->{password}

@@ -59,7 +59,7 @@ my @patrons = $CHECK_ALL ? ( sort keys %$config ) : @ARGV;
 
 my $base_url        = 'https://lawrence.bibliocommons.com';
 my $login_url       = "$base_url/user/login?destination=https://lplks.org";
-my $checked_out_url = "$base_url/checkedout/index/out";
+my $checked_out_url = "$base_url/checkedout";
 
 my $TABLE_HEADER = [ '#', 'Title', 'Due Date', 'Holds' ];
 

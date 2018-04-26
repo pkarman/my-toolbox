@@ -61,7 +61,7 @@ my $base_url        = 'https://lawrence.bibliocommons.com';
 my $login_url       = "$base_url/user/login?destination=https://lplks.org";
 my $checked_out_url = "$base_url/checkedout";
 
-my $TABLE_HEADER = [ '#', 'Title', 'Due Date', 'Holds' ];
+my $TABLE_HEADER = [ '#', 'Title', 'Due Date', 'Holds', 'eBook' ];
 
 # global var for queuing overdue or due soon items
 my @NOTIFY_QUEUE = ($TABLE_HEADER);
@@ -114,7 +114,7 @@ sub checked_out_items {
 sub build_report_table {
     my ( $www, $checked_out ) = @_;
     my $count = 0;
-    my @rows  = ([@$TABLE_HEADER]);
+    my @rows = ( [@$TABLE_HEADER] );
     push @{ $rows[0] }, 'Renewed' if $RENEW;
     for my $item ( $checked_out->get_nodelist ) {
 
@@ -132,6 +132,9 @@ sub build_report_table {
         }
 
         my $title = $item_link->as_trimmed_text;
+
+        my $format_div = $biblio->find_by_attribute( 'class', 'format' );
+        my $is_ebook = $format_div->as_HTML =~ m/eBook/;
 
         #say $title;
 
@@ -179,7 +182,11 @@ sub build_report_table {
 
         #say $due_when;
 
-        my $row = [ ++$count, $title, $due_when, $pending_holds ];
+        my $row = [
+            ++$count,  $title,
+            $due_when, $pending_holds,
+            ( $is_ebook ? 'x' : '' )
+        ];
 
         if (   $NOTIFY
             && $pending_holds

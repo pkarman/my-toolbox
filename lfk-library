@@ -229,6 +229,11 @@ sub renew_item {
         'btn btn-link single_circ_action' );
 
     #say $renewal_link->as_HTML;
+    if (!$renewal_link) {
+        warn "No Renewal Link for $item";
+        return;
+    }
+
     my $renewal_url = $base_url . $renewal_link->attr('href');
 
     #say $renewal_url;

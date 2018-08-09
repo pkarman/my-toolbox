@@ -14,4 +14,5 @@ if ( -s $geojson ) {
 }
 
 my $cmd = "ogr2ogr -f GeoJSON -t_srs crs:84 -s_srs $s_srs $geojson $shp_file";
+print $cmd, $/;
 system($cmd) and die "$cmd failed: $!";

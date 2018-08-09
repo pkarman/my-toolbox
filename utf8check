@@ -1,0 +1,13 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+
+use File::Slurper qw( read_binary );
+use Search::Tools::UTF8 qw( is_valid_utf8 find_bad_utf8 );
+
+for my $f (@ARGV) {
+    my $buf = read_binary($f);
+    if ( !is_valid_utf8($buf) ) {
+        warn "$f: " . find_bad_utf8($buf);
+    }
+}

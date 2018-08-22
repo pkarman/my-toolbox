@@ -214,7 +214,7 @@ sub build_report_table {
                 push @$row, 'renewed';
             }
             else {
-                push @$row,         'renewal failed';
+                push @$row,         'renewal failed' unless $is_ebook;
                 push @NOTIFY_QUEUE, $row;
             }
         }
@@ -225,6 +225,11 @@ sub build_report_table {
 
 sub renew_item {
     my ( $www, $item ) = @_;
+
+    if ($item->as_HTML =~ m/Cannot Renew/) {
+        return;
+    }
+
     my $renewal_link = $item->find_by_attribute( 'class',
         'btn btn-link single_circ_action' );
 

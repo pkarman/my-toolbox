@@ -134,7 +134,7 @@ sub build_report_table {
         my $title = $item_link->as_trimmed_text;
 
         my $format_div = $biblio->find_by_attribute( 'class', 'format' );
-        my $is_ebook = $format_div->as_HTML =~ m/eBook/;
+        my $is_ebook = $format_div->as_HTML =~ m/eBook|Audiobook/;
 
         #say $title;
 

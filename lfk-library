@@ -230,7 +230,7 @@ sub renew_item {
 
     #say $renewal_link->as_HTML;
     if (!$renewal_link) {
-        warn "No Renewal Link for $item";
+        warn "No Renewal Link for " . $item->as_HTML;
         return;
     }
 

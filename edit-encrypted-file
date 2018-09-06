@@ -9,7 +9,7 @@ $plain_file =~ s/\.gpg$//;
 
 die "bad input file name: $file" if $file eq $plain_file;
 
-my $decrypt = 'gpg -o - ';
+my $decrypt = 'gpg -u $ENV{GPG_EMAIL} -d -o - ';
 my $encrypt = "gpg -e -r $ENV{GPG_EMAIL}";
 
 sub run {

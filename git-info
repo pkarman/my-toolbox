@@ -7,11 +7,6 @@
 # 
 # Based on discussion at http://kerneltrap.org/mailarchive/git/2007/11/12/406496
 
-pushd . >/dev/null
-
-# Find base of git directory
-while [ ! -d .git ] && [ ! `pwd` = "/" ]; do cd ..; done
-
 # Show various information about this git directory
 if [ -d .git ]; then
   echo "== Remote URLs: "
@@ -38,6 +33,4 @@ if [ -d .git ]; then
 else
   echo "Not a git repository."
 fi
-
-popd >/dev/null
 

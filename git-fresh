@@ -1,7 +1,4 @@
-pushd . >/dev/null
-
-# Find base of git directory
-while [ ! -d .git ] && [ ! `pwd` = "/" ]; do cd ..; done
+#!/bin/sh
 
 # pull latest master, clean up old branches
 if [ -d .git ]; then
@@ -10,5 +7,5 @@ if [ -d .git ]; then
   git remote prune origin
   git branch -vv | grep ': gone]' | awk '{print $1}' | xargs git branch -D
 else
-  echo "Not a git repository."
+  echo "Not a git repository or you need to chdir to top level."
 fi

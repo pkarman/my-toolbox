@@ -1,7 +1,4 @@
-pushd . >/dev/null
-
-# Find base of git directory
-while [ ! -d .git ] && [ ! `pwd` = "/" ]; do cd ..; done
+#!/bin/sh
 
 # pull latest master, rebase with upstream
 if [ -d .git ]; then

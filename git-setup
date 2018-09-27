@@ -1,3 +1,5 @@
+#!/bin/sh
+
 if [[ $# -lt 2 ]]; then
   echo "git setup url email"
   exit

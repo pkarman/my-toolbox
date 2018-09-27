@@ -1,4 +1,9 @@
-#!/bin/bash
+#!/bin/sh
+
+if [! -d .git ]; then
+  echo "Not a git repository."
+  exit
+fi
 
 git remote prune origin
 git branch -vv | grep ': gone]' | awk '{print $1}' | xargs git branch -D

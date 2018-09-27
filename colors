@@ -4,8 +4,7 @@ use warnings;
 use Term::ANSIColor;
 use v5.10;
 
-# we assume "black"
-my @colors = qw( red green yellow blue magenta cyan white );
+my @colors = qw( red green yellow blue magenta cyan white black );
 
 for my $color (@colors) {
     my @perms = (

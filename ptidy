@@ -16,6 +16,7 @@ if ( !@ARGV ) {
 my $debug = 1;
 
 for my $file (@ARGV) {
+    my $is_x = -x $file;
     my $buf = read_file($file);
     if ( is_php( $buf, $file ) ) {
         run_php_tidy($file);
@@ -26,6 +27,7 @@ for my $file (@ARGV) {
     elsif ( is_ruby( $buf, $file ) ) {
         run_ruby_tidy($file);
     }
+    run("chmod +x $file") if $is_x;
 }
 
 sub is_php {

@@ -1,0 +1,108 @@
+# functions sourced from .bashrc
+
+function cdd() {
+    #echo "args: $#"
+    dir=''
+    if [ $# = 0 ]; then
+        dir=$HOME
+    else
+        dir="$*"
+    fi
+    builtin cd $dir;
+    ls -FC;
+    echo '';
+}
+
+# Set shell prompt
+# based on
+# $Id: .bashrc,v 1.5 2004/09/15 16:24:58 psy Exp $
+#
+# Source: http://www.nothingisreal.com/
+#
+function prompt {
+    local        BLACK="\[\033[0;30m\]"
+    local         BLUE="\[\033[0;34m\]"
+    local        GREEN="\[\033[0;32m\]"
+    local         CYAN="\[\033[0;36m\]"
+    local          RED="\[\033[0;31m\]"
+    local       PURPLE="\[\033[0;35m\]"
+    local        BROWN="\[\033[0;33m\]"
+    local   LIGHT_GRAY="\[\033[0;37m\]"
+    local    DARK_GRAY="\[\033[1;30m\]"
+    local   LIGHT_BLUE="\[\033[1;34m\]"
+    local  LIGHT_GREEN="\[\033[1;32m\]"
+    local   LIGHT_CYAN="\[\033[1;36m\]"
+    local    LIGHT_RED="\[\033[1;31m\]"
+    local LIGHT_PURPLE="\[\033[1;35m\]"
+    local       YELLOW="\[\033[1;33m\]"
+    local        WHITE="\[\033[1;37m\]"
+    local    NO_COLOUR="\[\033[0m\]"
+
+    case $TERM in
+        xterm*)
+            TITLEBAR='\[\033]0;\u@\h:\w\007\]'
+            ;;
+        *)
+            TITLEBAR=""
+            ;;
+    esac
+
+    case $1 in
+        white) PS1="$WHITE\u@\h: ";;
+        blue)
+            PS1="${TITLEBAR}$BLUE[$BLUE\u$BLUE@$BLUE\h$BLUE:$BLACK\w$BLUE]$BLUE\$$BLACK "
+            ;;
+        red)
+            PS1="${TITLEBAR}$RED[$RED\u$RED@$RED\h$RED:$RED\w$RED]$BLACK\$$BLACK "
+            ;;
+        green)
+            PS1="${TITLEBAR}$GREEN[$GREEN\u$GREEN@$GREEN\h$GREEN:$CYAN\w$GREEN]$BLACK\$$BLACK "
+            ;;
+        brown)
+            PS1="${TITLEBAR}$BROWN[$LIGHT_BROWN\u$BROWN@$LIGHT_BROWN\h$BROWN:$LIGHT_CYAN\w$BROWN]$BLACK\$$BLACK "
+            ;;
+        purple)
+            PS1="${TITLEBAR}$PURPLE[$PURPLE\u$PURPLE@$PURPLE\h$PURPLE:$BLACK\w$PURPLE]$BLACK\$$BLACK "
+            ;;
+        *)
+            PS1="[\u@\h:\w]\$ "
+            ;;
+    esac
+    PS2='> '
+    PS4='+ '
+}
+case $HOST in
+     workhorse*)  prompt  purple ;;
+              *)  prompt  blue ;;
+esac
+
+
+# start up ssh-agent on login
+SSH_ENV="$HOME/.ssh/environment.$HOST"
+
+function start_agent {
+     echo "Initialising new SSH agent..."
+     /usr/bin/ssh-agent | sed 's/^echo/#echo/' > "${SSH_ENV}"
+     echo succeeded
+     chmod 600 "${SSH_ENV}"
+     . "${SSH_ENV}" > /dev/null
+     /usr/bin/ssh-add;
+     /usr/bin/ssh-add ~/.ssh/id_dsa_pkarman;
+     /usr/bin/ssh-add ~/.ssh/id_rsa_truss_va;
+}
+
+# Source SSH settings, if applicable
+
+if [ ! ${SSH_AGENT_PID} ]; then
+if [ -f "${SSH_ENV}" ]; then
+     #echo "SSH_ENV = $SSH_ENV"
+     . "${SSH_ENV}" > /dev/null
+     #ps ${SSH_AGENT_PID} doesn't work under cywgin
+     ps -ef | grep ${SSH_AGENT_PID} | grep ssh-agent$ > /dev/null || {
+         start_agent;
+     }
+else
+     start_agent;
+fi
+fi
+

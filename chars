@@ -1,5 +1,5 @@
 #!/usr/bin/perl 
-# 
+#
 # perl@peknet.com
 #
 # print chart of chars and corresponding hexdump vals
@@ -9,18 +9,37 @@
 use strict;
 use warnings;
 use Term::ANSIColor;
+use charnames ();
 binmode STDOUT, ':utf8';
+
+my %escapes = (
+    "\a" => "\\a",
+    "\b" => "\\b",
+    "\f" => "\\f",
+    "\n" => "\\n",
+    "\r" => "\\r",
+    "\t" => "\\t",
+    "\x0B" => "\\v",
+);
 print '   ';
-my $on    = color('bold');
+my $on    = color('blue');
 my $off   = color('reset');
 my $c     = 0;
 my $start = shift @ARGV || 161;
 my $stop  = shift @ARGV || 255;
-for (33 .. 126, $start .. $stop)
-{
-    printf("\\%05d  %c  \\x%05x     ", $_, $_, $_);
-    if (++$c == 4)
-    {
+
+for ( 33 .. 126, $start .. $stop ) {
+    my $safe = sprintf( "%c", $_ );
+    if ($_ < 33 && !$escapes{$safe}) {
+        $safe = charnames::viacode($_);
+    }
+    if ( $escapes{$safe} ) {
+        $safe = $escapes{$safe};
+    }
+
+    printf( "\\%05d  $on%s$off  \\x%05x     ", $_, $safe, $_ );
+    $c = 3 if length($safe) > 2;
+    if ( ++$c == 4 ) {
         print "\n   ";
         $c = 0;
     }

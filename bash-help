@@ -81,14 +81,16 @@ esac
 SSH_ENV="$HOME/.ssh/environment.$HOST"
 
 function start_agent {
-     echo "Initialising new SSH agent..."
-     /usr/bin/ssh-agent | sed 's/^echo/#echo/' > "${SSH_ENV}"
-     echo succeeded
-     chmod 600 "${SSH_ENV}"
-     . "${SSH_ENV}" > /dev/null
-     /usr/bin/ssh-add;
-     /usr/bin/ssh-add ~/.ssh/id_dsa_pkarman;
-     /usr/bin/ssh-add ~/.ssh/id_rsa_truss_va;
+    echo "Initialising new SSH agent..."
+    /usr/bin/ssh-agent | sed 's/^echo/#echo/' > "${SSH_ENV}"
+    echo succeeded
+    chmod 600 "${SSH_ENV}"
+    . "${SSH_ENV}" > /dev/null
+    for possiblekey in ${HOME}/.ssh/id_*; do
+        if grep -q PRIVATE "$possiblekey"; then
+            ssh-add "$possiblekey"
+        fi
+    done
 }
 
 # Source SSH settings, if applicable

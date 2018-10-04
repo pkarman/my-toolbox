@@ -29,7 +29,7 @@ my $start = shift @ARGV || 161;
 my $stop  = shift @ARGV || 255;
 
 for ( 33 .. 126, $start .. $stop ) {
-    my $safe = sprintf( "%c", $_ );
+    my $safe = chr($_);
     if ($_ < 33 && !$escapes{$safe}) {
         $safe = charnames::viacode($_);
     }

@@ -1,0 +1,18 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+
+sub run_it {
+    my ($cmd) = @_;
+    print $cmd, $/;
+    system($cmd) and die "$cmd failed: $!";
+}
+
+my $usage = "$0 'command to run on a bunch of files' file[s]";
+my $thing_to_do = shift or die $usage;
+
+for my $file (@ARGV) {
+    my $tmpf = "$file.tmp";
+    run_it("$thing_to_do $file > $tmpf");
+    rename $tmpf, $file or die "Can't rename $tmpf -> $file: $!";
+}

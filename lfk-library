@@ -203,6 +203,7 @@ sub build_report_table {
             class => 'cp-due-date-notice',
             class => 'due-date-notice'
         );
+        # TODO broken
         my $duedate_overdue = find_element_maybe( $due_div,
             class => 'checkedout_status overdue' );
 
@@ -227,6 +228,7 @@ sub build_report_table {
 
         if (   $NOTIFY
             && $pending_holds
+            && !$RENEW
             && ( $duedate_soon || $duedate_overdue ) )
         {
             push @NOTIFY_QUEUE, $row;

@@ -167,8 +167,8 @@ sub build_report_table {
             my $href = $item_link->attr('href');
             my ($item_id) = ( $href =~ m,/item/show/(\d+), );
 
-            say $href;
-            say $item_id;
+            #say $href;
+            #say $item_id;
             my $url = sprintf( "%s/item/show_circulation_widget/%s.json",
                 $base_url, $item_id );
 
@@ -300,7 +300,7 @@ sub renew_item {
     # parse the react json blob from the page to find the user id
     my $patron = get_patron_profile($who);
 
-    say dump($patron);
+    #say dump($patron);
 
     my $user_id = $patron->{reduxStoreData}->{auth}->{currentUserId} + 0;
 
@@ -314,7 +314,7 @@ sub renew_item {
         [ 'Content-Type' => 'application/json', 'Accept' => 'application/json' ], $renewal_req
     );
 
-    say $request->as_string;
+    #say $request->as_string;
 
     my $agent = LWP::UserAgent->new();
 

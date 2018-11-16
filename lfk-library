@@ -34,12 +34,14 @@ use JSON;
 use IO::Prompt::Simple;
 use Email::Stuffer;
 use Encode;
+
 #use LWP::ConsoleLogger::Everywhere;
 
 my $usage = "$0 [--all | patron_name] [--renew]\n";
 my $CHECK_ALL;
 my $RENEW;
 my $VERBOSE;
+my $DEBUG;
 my $PROMPT = 1;
 my $HTML;
 my $NOTIFY;
@@ -49,6 +51,7 @@ GetOptions(
     "renew"    => \$RENEW,
     "prompt!"  => \$PROMPT,
     "verbose"  => \$VERBOSE,
+    "debug"    => \$DEBUG,
     "notify=s" => \$NOTIFY,
 ) or die $usage;
 
@@ -83,11 +86,27 @@ sub notify {
     my $body = Text::Table::Any::table(
         rows       => \@NOTIFY_QUEUE,
         header_row => 1,
+        encode     => 0,
         backend    => table_backend(),
     );
+    if ($DEBUG) {
+        say "NOTIFY EMAIL $NOTIFY";
+        say $body;
+        return;
+    }
     Email::Stuffer->to($NOTIFY)->from( $ENV{EMAIL} )
         ->subject( $ENV{SUBJECT} || 'LFK Library Due' )->html_body($body)
         ->send_or_die;
+}
+
+sub format_title {
+    my ( $title, $href ) = @_;
+    if ($HTML) {
+        return sprintf( "<a href='%s%s'>%s</a>", $base_url, $href, $title );
+    }
+    else {
+        return $title;
+    }
 }
 
 sub table_backend {
@@ -203,48 +222,43 @@ sub build_report_table {
             class => 'cp-due-date-notice',
             class => 'due-date-notice'
         );
-        # TODO broken
-        my $duedate_overdue = find_element_maybe( $due_div,
-            class => 'checkedout_status overdue' );
 
-        #say dump($duedate);
-        #say dump($duedate_soon);
-        #say dump($duedate_overdue);
-        my $due = $duedate || $duedate_soon || $duedate_overdue;
+        my $due = $duedate || $duedate_soon;
         my $due_when = $due->as_trimmed_text( extra_chars => '\xA0' );
         my $days_remaining = 0;
         if ($duedate_soon) {
             $days_remaining = $duedate_soon->as_trimmed_text;
             $days_remaining =~ s/ days? remaining//;
+            if ( $days_remaining =~ m/overdue/ ) {
+                $days_remaining =~ s/ days? overdue//;
+                $days_remaining *= -1;
+            }
         }
 
-        $VERBOSE and say $due_when;
+        if ($DEBUG) {
+            say "duedate=" . $duedate->as_HTML;
+            say "duedate_soon=" . $duedate_soon->as_HTML;
+            say "days_remaining=" . $days_remaining;
+            say "due_when=" . $due_when;
+        }
 
         my $row = [
-            ++$count,  $title,
-            $due_when, $pending_holds,
-            ( $is_ebook ? 'x' : '' )
+            ++$count, format_title( $title, $item_link->attr('href') ),
+            $due_when, $pending_holds, ( $is_ebook ? 'x' : '' )
         ];
 
         if (   $NOTIFY
-            && $pending_holds
             && !$RENEW
-            && ( $duedate_soon || $duedate_overdue ) )
+            && $days_remaining < 5 )
         {
             push @NOTIFY_QUEUE, $row;
         }
 
         if (  !$pending_holds
             && $RENEW
-            && ( $duedate_soon || $duedate_overdue )
+            && $duedate_soon
             && $days_remaining < 5 )
         {
-            $VERBOSE and say "duedate_soon=" . $duedate_soon->as_trimmed_text
-                if $duedate_soon;
-            $VERBOSE
-                and say "duedate_overdue="
-                . $duedate_overdue->as_trimmed_text
-                if $duedate_overdue;
             my $confirmation;
             if ($PROMPT) {
                 $confirmation = prompt "renew $title (due $due_when)",
@@ -311,7 +325,10 @@ sub renew_item {
 
     my $request = HTTP::Request->new(
         PATCH => $renewal_url,
-        [ 'Content-Type' => 'application/json', 'Accept' => 'application/json' ], $renewal_req
+        [   'Content-Type' => 'application/json',
+            'Accept'       => 'application/json'
+        ],
+        $renewal_req
     );
 
     #say $request->as_string;
@@ -354,7 +371,8 @@ sub get_patron_profile {
 # main loop
 say "<h1>LFK Library Report</h1>" if $HTML;
 for my $who (@patrons) {
-    my $www = WWW::Mechanize->new(agent => 'lfk-library-bot/1.0 <peter@peknet.com>');
+    my $www = WWW::Mechanize->new(
+        agent => 'lfk-library-bot/1.0 <peter@peknet.com>' );
     login( $www, $who );
     my $checked_out = checked_out_items($www);
     $PATRON_PAGES{$who} = $www->content;
@@ -364,6 +382,7 @@ for my $who (@patrons) {
     print Text::Table::Any::table(
         rows       => $rows,
         header_row => 1,
+        encode     => 0,
         backend    => table_backend(),
     );
 }

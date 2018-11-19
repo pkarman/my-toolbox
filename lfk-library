@@ -233,6 +233,9 @@ sub build_report_table {
                 $days_remaining =~ s/ days? overdue//;
                 $days_remaining *= -1;
             }
+            elsif ( $days_remaining =~ m/^a month/ ) {
+                $days_remaining = 30;
+            }
         }
 
         if ($DEBUG) {

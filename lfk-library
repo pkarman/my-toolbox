@@ -236,6 +236,9 @@ sub build_report_table {
             elsif ( $days_remaining =~ m/^a month/ ) {
                 $days_remaining = 30;
             }
+            elsif ( $days_remaining =~ m/today/ ) {
+                $days_remaining = 0;
+            }
         }
 
         if ($DEBUG) {

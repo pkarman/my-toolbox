@@ -257,7 +257,7 @@ sub build_report_table {
             && !$RENEW
             && $days_remaining < 5 )
         {
-            push @NOTIFY_QUEUE, $row;
+            push @NOTIFY_QUEUE, [ @$row, $who ];
         }
 
         if (  !$pending_holds

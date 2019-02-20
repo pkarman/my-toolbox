@@ -160,6 +160,10 @@ sub build_report_table {
 
         $VERBOSE and say $biblio->as_HTML;
         my $item_link = $biblio->look_down( '_tag' => 'a' );
+        if ( $biblio->as_HTML =~ m/Digital titles cannot be renewed/ ) {
+            next;
+        }
+
         if ( !$item_link ) {
             say "No item link for " . $item->as_HTML;
             next;

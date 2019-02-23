@@ -152,18 +152,17 @@ sub build_report_table {
     push @{ $rows[0] }, 'Renewed' if $RENEW;
     for my $item ( $checked_out->get_nodelist ) {
 
+        my $item_html = $item->as_HTML;
+
         # digital checkouts are skipped
-        next if $item->as_HTML =~ m/EPUB|MP3/;
+        next if $item_html =~ m/EPUB|MP3/;
+        next if $item_html =~ m/Digital titles cannot be renewed/;
 
         #$VERBOSE and say $item->as_HTML;
         my $biblio = $item->find_by_attribute( 'class', 'cp-bib-brief' );
 
         $VERBOSE and say $biblio->as_HTML;
         my $item_link = $biblio->look_down( '_tag' => 'a' );
-        if ( $biblio->as_HTML =~ m/Digital titles cannot be renewed/ ) {
-            next;
-        }
-
         if ( !$item_link ) {
             say "No item link for " . $item->as_HTML;
             next;

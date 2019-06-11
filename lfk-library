@@ -33,11 +33,15 @@ use Text::Table::Any;
 use JSON;
 use IO::Prompt::Simple;
 use Email::Stuffer;
+use Encode;
+
+#use LWP::ConsoleLogger::Everywhere;
 
 my $usage = "$0 [--all | patron_name] [--renew]\n";
 my $CHECK_ALL;
 my $RENEW;
 my $VERBOSE;
+my $DEBUG;
 my $PROMPT = 1;
 my $HTML;
 my $NOTIFY;
@@ -47,6 +51,7 @@ GetOptions(
     "renew"    => \$RENEW,
     "prompt!"  => \$PROMPT,
     "verbose"  => \$VERBOSE,
+    "debug"    => \$DEBUG,
     "notify=s" => \$NOTIFY,
 ) or die $usage;
 
@@ -59,12 +64,20 @@ my @patrons = $CHECK_ALL ? ( sort keys %$config ) : @ARGV;
 
 my $base_url        = 'https://lawrence.bibliocommons.com';
 my $login_url       = "$base_url/user/login?destination=https://lplks.org";
-my $checked_out_url = "$base_url/checkedout";
+my $checked_out_url = "$base_url/v2/checkedout";
+my $renewal_url
+    = "https://gateway.bibliocommons.com/v2/libraries/lawrence/checkouts";
 
 my $TABLE_HEADER = [ '#', 'Title', 'Due Date', 'Holds', 'eBook' ];
 
 # global var for queuing overdue or due soon items
 my @NOTIFY_QUEUE = ($TABLE_HEADER);
+
+# global cache for patron profiles
+my %PATRON_PROFILES = ();
+
+# global cache for patron checked out page
+my %PATRON_PAGES = ();
 
 ###########################################################################
 # functions
@@ -73,11 +86,27 @@ sub notify {
     my $body = Text::Table::Any::table(
         rows       => \@NOTIFY_QUEUE,
         header_row => 1,
+        encode     => 0,
         backend    => table_backend(),
     );
+    if ($DEBUG) {
+        say "NOTIFY EMAIL $NOTIFY";
+        say $body;
+        return;
+    }
     Email::Stuffer->to($NOTIFY)->from( $ENV{EMAIL} )
         ->subject( $ENV{SUBJECT} || 'LFK Library Due' )->html_body($body)
         ->send_or_die;
+}
+
+sub format_title {
+    my ( $title, $href ) = @_;
+    if ($HTML) {
+        return sprintf( "<a href='%s%s'>%s</a>", $base_url, $href, $title );
+    }
+    else {
+        return $title;
+    }
 }
 
 sub table_backend {
@@ -89,13 +118,15 @@ sub login {
     my ( $www, $who ) = @_;
     $www->get($login_url);
 
-    $www->submit_form(
+    my $response = $www->submit_form(
         form_number => 4,
         fields      => {
             name     => $config->{$who}->{username},
             user_pin => $config->{$who}->{password}
         }
     );
+
+    #$VERBOSE and say "$who login response: " . $response->decoded_content;
 
     unless ( $www->success ) {
         die "Failed to authenticate: " . $www->status;
@@ -106,55 +137,64 @@ sub checked_out_items {
     my ($www) = @_;
     $www->get($checked_out_url);
 
+    #$VERBOSE and say "checked_out_url: $checked_out_url";
+
     my $html_tree
         = HTML::TreeBuilder::XPath->new_from_content( $www->content );
-    return $html_tree->findnodes('//div[contains(@class, "listItem")]');
+    return $html_tree->findnodes(
+        '//div[contains(@class, "cp-batch-actions-list-item")]');
 }
 
 sub build_report_table {
-    my ( $www, $checked_out ) = @_;
+    my ( $www, $checked_out, $who ) = @_;
     my $count = 0;
     my @rows = ( [@$TABLE_HEADER] );
     push @{ $rows[0] }, 'Renewed' if $RENEW;
     for my $item ( $checked_out->get_nodelist ) {
 
+        my $item_html = $item->as_HTML;
+
         # digital checkouts are skipped
-        next if $item->as_HTML =~ m/EPUB|MP3/;
+        next if $item_html =~ m/EPUB|MP3/;
+        next if $item_html =~ m/Digital titles cannot be renewed/;
 
-        #say $item->as_HTML;
-        my $biblio = $item->find_by_attribute( 'class', 'primary_bib_info' );
+        #$VERBOSE and say $item->as_HTML;
+        my $biblio = $item->find_by_attribute( 'class', 'cp-bib-brief' );
 
-        #say $biblio->as_HTML;
+        $VERBOSE and say $biblio->as_HTML;
         my $item_link = $biblio->look_down( '_tag' => 'a' );
         if ( !$item_link ) {
             say "No item link for " . $item->as_HTML;
             next;
         }
 
-        my $title = $item_link->as_trimmed_text;
+        my $title = $item_link->look_down( 'class', 'title-content' )
+            ->as_trimmed_text;
 
-        my $format_div = $biblio->find_by_attribute( 'class', 'format' );
+        my $format_div
+            = $biblio->find_by_attribute( 'class', 'cp-format-info' );
         my $is_ebook = $format_div->as_HTML =~ m/eBook|Audiobook/;
 
-        #say $title;
+        $VERBOSE and say $title;
 
         my $pending_holds
-            = $item->find_by_attribute( 'class', 'checkedout_num_waiting' );
+            = $item->find_by_attribute( 'class', 'cp-held-copies-count' );
         if ($pending_holds) {
             $pending_holds = $pending_holds->as_trimmed_text;
+            $pending_holds =~ s/ \w+ waiting//;
         }
         else {
         # some caching bug on site prevents holds from always showing up
         # on the summary list page. So check the item subscription stats page.
             my $href = $item_link->attr('href');
-            my ($item_id) = ( $href =~ m,/item/show/(\d+)_, );
+            my ($item_id) = ( $href =~ m,/item/show/(\d+), );
 
             #say $href;
             #say $item_id;
             my $url = sprintf( "%s/item/show_circulation_widget/%s.json",
                 $base_url, $item_id );
 
-            #say $url;
+            $VERBOSE and say $url;
             my $resp      = $www->get($url);
             my $resp_meta = decode_json $resp->decoded_content;
             my $tree      = HTML::TreeBuilder::XPath->new_from_content(
@@ -162,42 +202,71 @@ sub build_report_table {
             my $holds
                 = $tree->find_by_attribute( 'testid', 'text_holdcopies' );
             $holds = $holds->as_trimmed_text if $holds;
+            $holds =~ s/ \w+ waiting// if $holds;
 
-            #say "holds: $holds";
+            $VERBOSE and say "holds: $holds";
             $pending_holds = $holds if $holds;
         }
 
         my $due_div
-            = $item->find_by_attribute( 'class', 'checkedout_due_date' );
+            = HTML::TreeBuilder::XPath->new_from_content(
+            $item->find_by_attribute( 'class', 'checkedout-status' )
+                ->as_HTML );
 
-        #say $due_div->as_HTML;
-        my $duedate
-            = $due_div->find_by_attribute( 'class', 'checkedout_status out' );
-        my $duedate_soon = $due_div->find_by_attribute( 'class',
-            'checkedout_status coming_due' );
-        my $duedate_overdue = $due_div->find_by_attribute( 'class',
-            'checkedout_status overdue' );
-        my $due = $duedate || $duedate_soon || $duedate_overdue;
+        $VERBOSE and say $due_div->as_XML_indented;
+
+        my $duedate = find_element_maybe(
+            $due_div,
+            class => 'cp-checked-out-due-on',
+            class => 'cp-short-formatted-date'
+        );
+        my $duedate_soon = find_element_maybe(
+            $due_div,
+            class => 'cp-due-date-notice',
+            class => 'due-date-notice'
+        );
+
+        my $due = $duedate || $duedate_soon;
         my $due_when = $due->as_trimmed_text( extra_chars => '\xA0' );
+        my $days_remaining = 0;
+        if ($duedate_soon) {
+            $days_remaining = $duedate_soon->as_trimmed_text;
+            $days_remaining =~ s/ days? remaining//;
+            if ( $days_remaining =~ m/overdue/ ) {
+                $days_remaining =~ s/ days? overdue//;
+                $days_remaining *= -1;
+            }
+            elsif ( $days_remaining =~ m/^a month/ ) {
+                $days_remaining = 30;
+            }
+            elsif ( $days_remaining =~ m/today/ ) {
+                $days_remaining = 0;
+            }
+        }
 
-        #say $due_when;
+        if ($DEBUG) {
+            say "duedate=" . $duedate->as_HTML;
+            say "duedate_soon=" . $duedate_soon->as_HTML;
+            say "days_remaining=" . $days_remaining;
+            say "due_when=" . $due_when;
+        }
 
         my $row = [
-            ++$count,  $title,
-            $due_when, $pending_holds,
-            ( $is_ebook ? 'x' : '' )
+            ++$count, format_title( $title, $item_link->attr('href') ),
+            $due_when, $pending_holds, ( $is_ebook ? 'x' : '' )
         ];
 
         if (   $NOTIFY
-            && $pending_holds
-            && ( $duedate_soon || $duedate_overdue ) )
+            && !$RENEW
+            && $days_remaining < 5 )
         {
-            push @NOTIFY_QUEUE, $row;
+            push @NOTIFY_QUEUE, [ @$row, $who ];
         }
 
         if (  !$pending_holds
             && $RENEW
-            && ( $duedate_soon || $duedate_overdue ) )
+            && $duedate_soon
+            && $days_remaining < 5 )
         {
             my $confirmation;
             if ($PROMPT) {
@@ -210,11 +279,11 @@ sub build_report_table {
             if ( $confirmation eq 'n' ) {
                 push @$row, 'skipped renewal';
             }
-            elsif ( renew_item( $www, $item ) ) {
+            elsif ( renew_item( $www, $item, $who ) ) {
                 push @$row, 'renewed';
             }
             else {
-                push @$row,         'renewal failed' unless $is_ebook;
+                push @$row, 'renewal failed' unless $is_ebook;
                 push @NOTIFY_QUEUE, $row;
             }
         }
@@ -223,30 +292,63 @@ sub build_report_table {
     return \@rows;
 }
 
+sub find_element_maybe {
+    my ( $el, %pairs ) = @_;
+    my $num_pairs = scalar( keys %pairs );
+    my $count     = 0;
+    while ( my ( $key, $value ) = each %pairs ) {
+        $el = $el->look_down( $key, $value );
+        last unless $el;
+        $count++;
+    }
+    return $el;
+}
+
+sub find_item_id {
+    my ($item) = @_;
+    my $checkbox = $item->look_down( class => qr/cp-checkbox/ );
+    my $input = $checkbox->look_down( _tag => 'input' );
+    return $input->attr('value');
+}
+
 sub renew_item {
-    my ( $www, $item ) = @_;
+    my ( $www, $item, $who ) = @_;
 
-    if ($item->as_HTML =~ m/Cannot Renew/) {
+    if ( $item->as_HTML =~ m/Cannot Renew/ ) {
         return;
     }
 
-    my $renewal_link = $item->find_by_attribute( 'class',
-        'btn btn-link single_circ_action' );
+    my $item_id = find_item_id($item);
 
-    #say $renewal_link->as_HTML;
-    if (!$renewal_link) {
-        warn "No Renewal Link for " . $item->as_HTML;
-        return;
-    }
+    # parse the react json blob from the page to find the user id
+    my $patron = get_patron_profile($who);
 
-    my $renewal_url = $base_url . $renewal_link->attr('href');
+    #say dump($patron);
 
-    #say $renewal_url;
-    my $resp = $www->get($renewal_url);
+    my $user_id = $patron->{reduxStoreData}->{auth}->{currentUserId} + 0;
+
+    my $renewal_req = encode_json(
+        { accountId => $user_id, checkoutIds => [$item_id], renew => \1 } );
+
+    #say $renewal_req;
+
+    my $request = HTTP::Request->new(
+        PATCH => $renewal_url,
+        [   'Content-Type' => 'application/json',
+            'Accept'       => 'application/json'
+        ],
+        $renewal_req
+    );
+
+    #say $request->as_string;
+
+    my $agent = LWP::UserAgent->new();
+
+    my $resp = $www->request($request);
 
     my $response = $resp->decoded_content;
 
-    #say $response;
+    say $response;
     return if $response =~ /overdrive\.com/;
 
     my $renewal_meta = decode_json $response;
@@ -259,24 +361,37 @@ sub renew_item {
         return 0;
     }
 
-    #say $www->success;
-    #say $response->decoded_content;
+    $VERBOSE and say $www->success;
+    $VERBOSE and say $response->decoded_content;
     return $www->success;
+}
+
+sub get_patron_profile {
+    my ($who) = @_;
+    return $PATRON_PROFILES{$who} if $PATRON_PROFILES{$who};
+    my $html      = $PATRON_PAGES{$who};
+    my ($payload) = ( $html =~ m/({"airbrakeConfig":.+?})<\/script>/s );
+    my $profile   = decode_json( Encode::encode_utf8($payload) );
+    $PATRON_PROFILES{$who} = $profile;
+    return $profile;
 }
 
 #########################################################################
 # main loop
 say "<h1>LFK Library Report</h1>" if $HTML;
 for my $who (@patrons) {
-    my $www = WWW::Mechanize->new;
+    my $www = WWW::Mechanize->new(
+        agent => 'lfk-library-bot/1.0 <peter@peknet.com>' );
     login( $www, $who );
     my $checked_out = checked_out_items($www);
-    my $rows = build_report_table( $www, $checked_out );
+    $PATRON_PAGES{$who} = $www->content;
+    my $rows = build_report_table( $www, $checked_out, $who );
     say $HTML ? "<h2>$who</h2>" : $who;
     next unless @$rows > 1;
     print Text::Table::Any::table(
         rows       => $rows,
         header_row => 1,
+        encode     => 0,
         backend    => table_backend(),
     );
 }

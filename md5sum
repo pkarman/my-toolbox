@@ -7,6 +7,10 @@ unless ( $^O =~ m/darwin/i ) {
     exec "/usr/bin/md5sum", @ARGV;
 }
 
+if (-e "/usr/local/bin/md5sum") {
+    exec "/usr/local/bin/md5sum", @ARGV;
+}
+
 for my $md5file (@ARGV) {
     next if $md5file =~ m/^-/;
     unless (-r $md5file) {

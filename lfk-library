@@ -131,6 +131,8 @@ sub login {
     unless ( $www->success ) {
         die "Failed to authenticate: " . $www->status;
     }
+
+    return $config->{$who}->{username};
 }
 
 sub checked_out_items {
@@ -382,11 +384,11 @@ say "<h1>LFK Library Report</h1>" if $HTML;
 for my $who (@patrons) {
     my $www = WWW::Mechanize->new(
         agent => 'lfk-library-bot/1.0 <peter@peknet.com>' );
-    login( $www, $who );
+    my $username = login( $www, $who );
     my $checked_out = checked_out_items($www);
     $PATRON_PAGES{$who} = $www->content;
     my $rows = build_report_table( $www, $checked_out, $who );
-    say $HTML ? "<h2>$who</h2>" : $who;
+    say $HTML ? "<h2>$who $username</h2>" : "$who $username";
     next unless @$rows > 1;
     print Text::Table::Any::table(
         rows       => $rows,

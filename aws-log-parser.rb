@@ -14,7 +14,7 @@ require 'slop'
 # example
 # log/path/is/long.out i-01633 [example.gov] [5c6e6b44-089a-4958-9bc5-ae5ce1607cdf] [172.30.86.122] [USERID user@example.gov] [2019-04-10 10:35:27 -0400]
 
-pattern = /^(\S+)\ (\S+)\ \[(.+?)\]\ \[(.+?)\]\ \[(.+?)\]\ \[(.+?)\]\ \[(.+?)\]\ +(.+)/
+pattern = /^(\S+)\ (\S+)\ \[(.+?)\]\ \[(.+?)\]\ \[(.+?)\]\ (\[(.+?)\]\ )?\[(.+?)\]\ +(.+)/
 
 opts = Slop.parse do |o|
   o.array '-f', '--fields', 'list of fields to show', default: ['requestid', 'tstamp', 'req'], delimiter: /\W/
@@ -32,7 +32,7 @@ ARGF.each_line do |line|
   #puts "line: #{line}"
   next unless parts
   #puts "parts: #{parts.captures.inspect}"
-  logf, ec2id, hostname, requestid, ipaddr, user, tstamp, req = parts.captures
+  logf, ec2id, hostname, requestid, ipaddr, user_bracket, user, tstamp, req = parts.captures
   rec = { logf: logf, ec2id: ec2id, hostname: hostname, requestid: requestid, ipaddr: ipaddr, user: user, tstamp: tstamp, req: req }
   out = []
   template.each do |field|

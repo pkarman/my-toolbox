@@ -163,6 +163,11 @@ sub build_report_table {
         #$VERBOSE and say $item->as_HTML;
         my $biblio = $item->find_by_attribute( 'class', 'cp-bib-brief' );
 
+        if (!$biblio) {
+          warn "Cannot find cp-bib-brief for $item_html";
+          next;
+        }
+
         $VERBOSE and say $biblio->as_HTML;
         my $item_link = $biblio->look_down( '_tag' => 'a' );
         if ( !$item_link ) {

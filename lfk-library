@@ -161,11 +161,12 @@ sub build_report_table {
         next if $item_html =~ m/Digital titles cannot be renewed/;
 
         #$VERBOSE and say $item->as_HTML;
-        my $biblio = $item->find_by_attribute( 'class', 'cp-bib-brief' );
+        my $biblio = $item->find_by_attribute( 'class', 'cp-bib-brief' )
+            || $item->find_by_attribute( 'class', 'cp-borrowing-bib-brief' );
 
-        if (!$biblio) {
-          warn "Cannot find cp-bib-brief for $item_html";
-          next;
+        if ( !$biblio ) {
+            warn "Cannot find cp-bib-brief for $item_html";
+            next;
         }
 
         $VERBOSE and say $biblio->as_HTML;

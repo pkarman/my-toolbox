@@ -30,7 +30,11 @@ ARGV.replace opts.arguments
 ARGF.each_line do |line|
   parts = line.match(pattern)
   #puts "line: #{line}"
-  next unless parts
+  #next unless parts
+  unless parts
+    puts line
+    next
+  end
   #puts "parts: #{parts.captures.inspect}"
   logf, ec2id, hostname, requestid, ipaddr, user_bracket, user, tstamp, req = parts.captures
   rec = { logf: logf, ec2id: ec2id, hostname: hostname, requestid: requestid, ipaddr: ipaddr, user: user, tstamp: tstamp, req: req }

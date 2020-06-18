@@ -1,0 +1,39 @@
+# This is Git's per-user configuration file.
+[user]
+	name = Peter Karman
+	email = peter@truss.works
+
+[push]
+	default = simple
+
+[alias]
+        f = fetch --prune
+        st = status
+        s = status
+        ci = commit
+        co = checkout
+        d = diff --relative
+        dc = diff --relative --cached
+        du = diff @{upstream}
+        amend = commit --amend --no-edit
+        cont = rebase --continue
+        skip = rebase --skip
+        abort = rebase --abort
+        aa = add --all
+        au = add -u
+        ff = merge --ff-only
+        pullff = pull --ff-only
+        b = branch
+        bb = branch -v -v
+        ds = diff --stat=160,120 --relative
+        dh1 = diff HEAD~1
+        wdiff = diff --color-words
+        l = log --color --pretty=format:\"%C(yellow)%h%C(reset)%C(bold red)%d%C(reset) %s %C(green)%ad%C(reset) %C(yellow bold)[%an]%C(reset)\" --relative-date
+        logsum = log --color --pretty=format:\"%C(yellow)%h%C(reset)%C(bold red)%d%C(reset) %s %C(green)%ad%C(reset) %C(yellow bold)[%an]%C(reset)\"
+        lg = log --pretty=oneline --abbrev-commit --decorate=short
+        lh = log --pretty=oneline --graph --abbrev-commit --decorate=short
+        unstage = reset HEAD --
+        up = rebase-update
+        fixsquash = rebase --onto origin/master origin/master
+[core]
+	pager = less -FRXe

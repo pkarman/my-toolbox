@@ -18,13 +18,11 @@ pattern = /^(\S+)\ (\S+)\ \[(.+?)\]\ \[(.+?)\]\ \[(.+?)\]\ (\[(.+?)\]\ )?\[(.+?)
 
 opts = Slop.parse do |o|
   o.array '-f', '--fields', 'list of fields to show', default: ['requestid', 'tstamp', 'req'], delimiter: /\W/
-  o.array '-h', '--help', 'show usage'
-end
-
-if opts[:help]
-  puts "#{$0} -h | -f 'field1 field2 ... fieldN'"
-  puts "fields: logf ec2id hostname requestid ipaddr user tstamp req"
-  exit
+  o.on '-h', '--help', 'show usage' do
+    puts "#{$0} -h | -f 'field1 field2 ... fieldN'"
+    puts "fields: logf ec2id hostname requestid ipaddr user tstamp req"
+    exit
+  end
 end
 
 template = opts[:fields].map(&:to_sym)

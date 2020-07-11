@@ -1,0 +1,40 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+use JSON;
+use Search::Elasticsearch;
+use File::Slurper qw( read_text read_binary );
+use Try::Tiny;
+
+sub read_json {
+    my ($filename) = @_;
+    from_json( read_binary($filename) );
+}
+
+my $e = Search::Elasticsearch->new();
+
+my @files = @ARGV ? @ARGV : <STDIN>;
+
+for my $json_file (@files) {
+    next unless -s $json_file;
+
+    my $buf;
+    try { $buf = read_json($json_file) };
+
+    next unless $buf;
+
+    my ($id) = ( $json_file =~ m/([\d\-]+)\.json/ );
+
+    #warn $id;
+
+    # each device is a "document"
+    my $bulk = $e->bulk_helper( index => 'solar', type => 'device' );
+    for my $device ( @{ $buf->{devices} } ) {
+        my $id = join( "-", $id, $device->{SERIAL} );
+        my @dtime = split( ',', $device->{CURTIME} );
+        $device->{tstamp} = sprintf( "%s-%s-%sT%s:%s:%s", @dtime );
+        $bulk->index( { id => $id, source => $device } );
+    }
+    $bulk->flush;
+}
+

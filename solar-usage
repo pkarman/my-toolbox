@@ -1,0 +1,27 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+use Search::Elasticsearch;
+use Data::Dump qw/ dump /;
+
+my $e = Search::Elasticsearch->new();
+
+my $results = $e->search(
+    index => 'solar',
+    body  => {
+        "size" => 1000,
+        "sort" => [ { "tstamp" => "asc" } ],
+        query  => { match => { 'DEVICE_TYPE' => 'Power Meter' } }
+
+            #query  => { match => { 'TYPE' => 'PVS5-METER-C' } }
+    }
+);
+
+for my $r ( @{ $results->{hits}->{hits} } ) {
+
+    #dump $r;
+    printf( "[%s] %s => %s\n",
+        $r->{_source}->{TYPE},
+        $r->{_source}->{tstamp},
+        $r->{_source}->{net_ltea_3phsum_kwh} );
+}

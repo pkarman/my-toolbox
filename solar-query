@@ -1,0 +1,6 @@
+#!/bin/sh
+
+NOW=`date '+%Y%m%d-%H%M%S'`
+URL='http://172.27.153.1/cgi-bin/dl_cgi?Command=DeviceList'
+
+curl -s $URL > $HOME/solar/$NOW.json

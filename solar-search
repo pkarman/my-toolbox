@@ -1,0 +1,9 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+
+my $q = join( '+AND+', @ARGV );
+
+#print "$q\n";
+
+system("curl -s 'localhost:9200/solar/_search?pretty&q=$q'");

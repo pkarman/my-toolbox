@@ -2,5 +2,7 @@
 
 NOW=`date '+%Y%m%d-%H%M%S'`
 URL='http://172.27.153.1/cgi-bin/dl_cgi?Command=DeviceList'
+FILE="$HOME/solar/$NOW.json"
 
-curl -s $URL > $HOME/solar/$NOW.json
+curl -s $URL > $FILE
+$HOME/perlbin/perl $HOME/bin/solar-index $FILE

@@ -1,6 +1,7 @@
 #!/usr/bin/env perl
 use strict;
 use warnings;
+use JSON;
 use Search::Elasticsearch;
 use Data::Dump qw/ dump /;
 
@@ -10,18 +11,38 @@ my $results = $e->search(
     index => 'solar',
     body  => {
         "size" => 1000,
-        "sort" => [ { "tstamp" => "asc" } ],
-        query  => { match => { 'DEVICE_TYPE' => 'Power Meter' } }
+        "sort" => [ { "tstamp" => "desc" } ],
+        #query  => { match => { 'DEVICE_TYPE' => 'Power Meter' } }
 
             #query  => { match => { 'TYPE' => 'PVS5-METER-C' } }
     }
 );
 
+my $usage = {};
+my $power = {};
 for my $r ( @{ $results->{hits}->{hits} } ) {
 
-    #dump $r;
-    printf( "[%s] %s => %s\n",
-        $r->{_source}->{TYPE},
+    next if $r->{_source}->{DEVICE_TYPE} eq 'PVS';
+
+    warn dump $r;
+    warn sprintf( "[%s] %s => %s\n",
+        $r->{_source}->{DESCR},
         $r->{_source}->{tstamp},
-        $r->{_source}->{net_ltea_3phsum_kwh} );
+        $r->{_source}->{p_3phsum_kw} );
+        #$r->{_source}->{net_ltea_3phsum_kwh} );
+
+    my $type = $r->{_source}->{DESCR};
+    my $time = $r->{_source}->{tstamp};
+    my $kwh = $r->{_source}->{net_ltea_3phsum_kwh} || $r->{_source}->{p_3phsum_kw};
+    #my $kwh = $r->{_source}->{p_3phsum_kw};
+
+    $usage->{$type} ||= [];
+    $power->{$type} += $kwh;
+
+    push @{ $usage->{$type} }, { kwh => $kwh, time => $time };
 }
+
+warn dump [keys %$usage];
+warn dump $power;
+
+print to_json($usage);

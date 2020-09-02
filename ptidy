@@ -3,8 +3,7 @@ use strict;
 use warnings;
 
 #
-# call perltidy or phptidy or rtidy, depending on whether the file(s)
-# is php or perl or ruby.
+# call language-appropriate tidier.
 #
 
 use File::Slurp::Tiny qw( read_file );
@@ -17,7 +16,7 @@ my $debug = 1;
 
 for my $file (@ARGV) {
     my $is_x = -x $file;
-    my $buf = read_file($file);
+    my $buf  = read_file($file);
     if ( is_php( $buf, $file ) ) {
         run_php_tidy($file);
     }
@@ -26,6 +25,9 @@ for my $file (@ARGV) {
     }
     elsif ( is_ruby( $buf, $file ) ) {
         run_ruby_tidy($file);
+    }
+    elsif ( is_js( $buf, $file ) ) {
+        run_js_prettier($file);
     }
     run("chmod +x $file") if $is_x;
 }
@@ -80,6 +82,11 @@ sub is_ruby {
     }
 }
 
+sub is_js {
+    my ( $buf, $file ) = @_;
+    return $file =~ /\.jsx?$/;
+}
+
 sub run {
     my $cmd = shift;
 
@@ -100,5 +107,10 @@ sub run_php_tidy {
 sub run_ruby_tidy {
     my $file = shift;
     run("rbeautify $file > $file.tdy && mv $file.tdy $file");
+}
+
+sub run_js_prettier {
+    my $file = shift;
+    run("npx prettier -w $file");
 }
 

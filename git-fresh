@@ -2,7 +2,7 @@
 
 # pull latest master, clean up old branches
 if [ -d .git ]; then
-  git checkout master
+  git checkout `git remote show origin | grep 'HEAD branch' | sed 's/.*: //'` 
   git pull
   git remote prune origin
   git branch -vv | grep ': gone]' | awk '{print $1}' | xargs git branch -D

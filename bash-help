@@ -1,3 +1,29 @@
+export HOSTNAME="`hostname | sed -e 's,\..*,,'`"
+export PAGER="less"
+export MANPAGER="less"
+export TERM="xterm-color"
+export EDITOR=vim
+export LESS=FRXe
+
+unset autologout        # don't log me out. please.
+
+# dev aliases
+alias akacurl='curl -v -s -o/dev/null -H "Pragma: akamai-x-get-cache-key" -H "Pragma: akamai-x-cache-on" -H "Pragma: akamai-x-cache-remote-on" -H "Pragma: akamai-x-get-true-cache-key" '
+alias be='bundle exec'
+alias bspec='be rspec --format documentation'
+alias decrypt=' gpg -u $GPG_EMAIL -d -o - '
+alias encrypt=' gpg -e -r $GPG_EMAIL '
+alias gc='git commit -a'
+alias pdiff='diff -ruw -x .svn '
+alias sourceenv='export $(cat .env | grep -v ^# | xargs)'
+alias splitspace="perl -n -e 's/\ /\n/g; print'"
+alias joinspace="perl -n -e 's/\n/ /; next if /#/; print'"
+alias nospace="perl -pi -e 's/^\ +$|\ +$//g'"
+alias venv='. venv/bin/activate'
+alias vi='vim'
+alias isodate='date "+%Y-%m-%dT%H:%M:%SZ"'
+
+
 # functions sourced from .bashrc
 
 function cdd() {
@@ -71,8 +97,9 @@ function prompt {
     PS2='> '
     PS4='+ '
 }
-case $HOST in
+case $HOSTNAME in
      workhorse*)  prompt  purple ;;
+     linode*)     prompt  green ;;
               *)  prompt  blue ;;
 esac
 

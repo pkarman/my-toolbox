@@ -240,7 +240,7 @@ sub build_report_table {
         if ($duedate_soon) {
             $days_remaining = $duedate_soon->as_trimmed_text;
             $days_remaining =~ s/ days? remaining//;
-            if ( $days_remaining =~ m/overdue/ ) {
+            if ( $days_remaining =~ m/days? overdue/ ) {
                 $days_remaining =~ s/ days? overdue//;
                 $days_remaining *= -1;
             }

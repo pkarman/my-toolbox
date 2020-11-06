@@ -48,7 +48,7 @@ function prompt {
     esac
 
     case $1 in
-        white) PS1="$WHITE\u@\h: ";;
+        white) PS1="$WHITE\u@\h:$BLACK ";;
         blue)
             PS1="${TITLEBAR}$BLUE[$BLUE\u$BLUE@$BLUE\h$BLUE:$BLACK\w$BLUE]$BLUE\$$BLACK "
             ;;

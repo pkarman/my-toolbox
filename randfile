@@ -9,4 +9,4 @@ fi
 
 SIZE=`echo $1 | numfmt  --from=iec`
 
-dd if=/dev/random bs=1 count=$SIZE
+dd if=/dev/random bs=$SIZE count=1

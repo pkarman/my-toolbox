@@ -84,6 +84,7 @@ sub is_ruby {
 
 sub is_js {
     my ( $buf, $file ) = @_;
+    return 1 if $buf =~ /env node/;
     return $file =~ /\.jsx?$/;
 }
 

@@ -1,0 +1,12 @@
+#!/bin/sh
+
+set -euxo pipefail
+
+if [[ $# -lt 1 ]]; then
+  echo "$0 size"
+  exit
+fi
+
+SIZE=`echo $1 | numfmt  --from=iec`
+
+dd if=/dev/random bs=1 count=$SIZE

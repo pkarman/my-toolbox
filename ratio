@@ -1,4 +1,6 @@
 #!/usr/bin/env perl
+use strict;
+use warnings;
 
 use Image::Size;
 my $usage = "$0 img_file scale [ outputs WxH ]\n";

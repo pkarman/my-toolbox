@@ -1,0 +1,18 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+use JSON::PP;
+
+my $input = do { local $/; <STDIN> };
+
+my $json = JSON::PP->new;
+$json = $json->sort_by(
+    sub {
+        $JSON::PP::a cmp $JSON::PP::b;
+    }
+);
+
+print $json->pretty->utf8->encode($json->decode($input)), "\n";
+
+1;

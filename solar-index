@@ -23,6 +23,7 @@ if ( $ENV{CREATE} ) {
         body  => {
             properties        => {
                 p_3phsum_kw     => { type => 'float' },    # AC power kWh
+                p_mpptsum_kw    => { type => 'float' },    # AC power kWh
                 ltea_3phsum_kwh => { type => 'float' },    # total energy kWh
                 vln_3phavg_v    => { type => 'float' },    # AC voltage
                 t_htsnk_degc    => { type => 'float' },    # heatsink temp

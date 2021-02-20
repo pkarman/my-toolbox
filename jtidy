@@ -1,0 +1,11 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+
+for my $file (@ARGV) {
+    my $tmp = "$file.tidy";
+    system("jq < $file > $tmp") and die "jq < $file > $tmp failed: $!";
+    if ( -s $tmp ) {
+        system("mv $tmp $file");
+    }
+}

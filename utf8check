@@ -3,11 +3,12 @@ use strict;
 use warnings;
 
 use File::Slurper qw( read_binary );
-use Search::Tools::UTF8 qw( is_valid_utf8 find_bad_utf8 );
+use Search::Tools::UTF8 qw( is_sane_utf8 is_valid_utf8 find_bad_utf8 );
 
-for my $f (@ARGV) {
-    my $buf = read_binary($f);
+while (<ARGV>) {
+    my $buf = $_; #read_binary($f);
     if ( !is_valid_utf8($buf) ) {
-        warn "$f: " . find_bad_utf8($buf);
+        is_sane_utf8($buf, 1);
+        warn substr(find_bad_utf8($buf), 0, 100);
     }
 }

@@ -12,8 +12,6 @@ if [ "$myfilesize" == "0" ]
 then
   echo "empty curl response"
   exit 1
-else
-#  echo "$FILE is $myfilesize bytes"
 fi
 
 $HOME/perlbin/perl $HOME/bin/solar-index $FILE

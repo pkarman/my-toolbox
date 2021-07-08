@@ -5,4 +5,15 @@ URL='http://172.27.153.1/cgi-bin/dl_cgi?Command=DeviceList'
 FILE="$HOME/solar/$NOW.json"
 
 curl -s $URL > $FILE
+
+myfilesize=$(stat --format=%s $FILE)
+[ -s $FILE ] || echo "$FILE is empty"
+if [ "$myfilesize" == "0" ]
+then
+  echo "empty curl response"
+  exit 1
+else
+#  echo "$FILE is $myfilesize bytes"
+fi
+
 $HOME/perlbin/perl $HOME/bin/solar-index $FILE

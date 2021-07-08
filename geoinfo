@@ -1,6 +1,5 @@
 #!/bin/sh
 
 FILE=$1
-BASE=`echo $FILE | sed -e "s/\.geojson$//"`
 
-ogrinfo $FILE $BASE -so
+ogrinfo -ro -so -al $FILE

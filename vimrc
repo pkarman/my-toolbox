@@ -20,5 +20,5 @@ set backspace=indent,eol,start
 set ts=2
 
 so $HOME/.vim/syntax/typescript.vim
-au BufRead,BufNewFile *.ts setfiletype typescript
-autocmd BufRead,BufNewFile *.ts set syntax=typescript
+au BufRead,BufNewFile *.ts,*.tsx,*.rst setfiletype typescript
+autocmd BufRead,BufNewFile *.ts,*.tsx,*.rst set syntax=typescript

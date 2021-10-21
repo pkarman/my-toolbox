@@ -1,0 +1,10 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+
+for my $file (@ARGV) {
+    my $docx = $file;
+    $docx =~ s/\.md$/\.docx/;
+    print "$file -> $docx\n";
+    system("pandoc -o $docx -f markdown -t docx $file") and die "Failed to convert: $!";
+}

@@ -19,6 +19,6 @@ set backspace=indent,eol,start
 " small tab size
 set ts=2
 
-so $HOME/.vim/syntax/typescript.vim
-au BufRead,BufNewFile *.ts,*.tsx,*.rst setfiletype typescript
-autocmd BufRead,BufNewFile *.ts,*.tsx,*.rst set syntax=typescript
+" so $HOME/.vim/syntax/typescript.vim
+au BufRead,BufNewFile *.ts,*.tsx,*.rst setfiletype typescriptreact
+autocmd BufRead,BufNewFile *.ts,*.tsx,*.rst set syntax=typescriptreact

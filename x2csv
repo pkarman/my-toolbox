@@ -1,0 +1,17 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+for my $xfile (@ARGV) {
+    my $csvfile = $xfile;
+    if ( $xfile =~ /\.xls$/ ) {
+        system("xls2csv-separate-sheets.pl --infile $xfile")
+            and die "failed to convert $xfile: $!";
+    }
+    elsif ( $xfile =~ /\.xlsx$/ ) {
+        $csvfile =~ s/\.xlsx$/.csv/;
+        system("xlsx2csv $xfile > $csvfile")
+            and die "failed to convert $xfile: $!";
+    }
+}

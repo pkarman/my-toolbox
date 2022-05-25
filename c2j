@@ -1,0 +1,11 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+
+for my $csvfile (@ARGV) {
+    my $jsonfile = $csvfile;
+    $jsonfile =~ s/.csv$/.json/;
+    print "Converting $csvfile\n";
+    system("csv2json $csvfile > $jsonfile")
+        and die "Failed to convert $csvfile: $!";
+}

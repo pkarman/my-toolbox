@@ -4,6 +4,7 @@ export MANPAGER="less"
 export TERM="xterm-color"
 export EDITOR=vim
 export LESS=FRXe
+export PATH="$HOME/my-toolbox:$PATH"
 
 unset autologout        # don't log me out. please.
 

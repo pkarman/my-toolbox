@@ -1,0 +1,14 @@
+#!/bin/sh
+
+LINES="${COUNT:-50000}"
+
+# https://stackoverflow.com/a/51421525
+
+awk -v l=${LINES} '(NR==1){header=$0;next}
+                (NR%l==2) {
+                   close(file); 
+                   file=sprintf("%s.%0.5d.csv",FILENAME,++c)
+                   sub(/csv[.]/,"",file)
+                   print header > file
+                }
+                {print > file}' $@

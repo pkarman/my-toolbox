@@ -1,0 +1,12 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+
+# pull out header, then whatever is on stdin
+
+my $usage = "$0 file.csv < lines-of-csv\n";
+my $csv_file = shift(@ARGV) or die $usage;
+open my $fh, "<", $csv_file;
+my $header = <$fh>;
+print $header;
+print while(<>);

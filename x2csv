@@ -12,6 +12,7 @@ for my $xfile (@ARGV) {
     elsif ( $xfile =~ /\.xlsx$/i ) {
         $csvfile =~ s/\W/-/g;
         $csvfile =~ s/-xlsx$/.csv/i;
+        print "Processing $xfile -> $csvfile...\n";
         system("xlsx2csv '$xfile' > $csvfile")
             and die "failed to convert $xfile: $!";
     }

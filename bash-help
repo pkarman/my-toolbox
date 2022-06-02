@@ -23,6 +23,7 @@ alias nospace="perl -pi -e 's/^\ +$|\ +$//g'"
 alias venv='. venv/bin/activate'
 alias vi='vim'
 alias isodate='date "+%Y-%m-%dT%H:%M:%SZ"'
+alias pw='rand 24 1'
 
 
 # functions sourced from .bashrc

@@ -8,5 +8,6 @@ if [[ $# -lt 1 ]]; then
 fi
 
 SIZE=`echo $1 | numfmt  --from=iec`
+COUNT=${2:-1}
 
-dd if=/dev/random bs=$SIZE count=1
+dd if=/dev/random bs=$SIZE count=$COUNT

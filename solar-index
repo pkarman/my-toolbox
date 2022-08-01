@@ -5,6 +5,7 @@ use JSON;
 use Search::Elasticsearch;
 use File::Slurper qw( read_text read_binary );
 use Try::Tiny;
+use Path::Tiny;
 
 sub read_json {
     my ($filename) = @_;
@@ -14,14 +15,15 @@ sub read_json {
 my $e = Search::Elasticsearch->new();
 
 if ( $ENV{CREATE} ) {
-    $e->indices->delete( index => 'solar' );
+    try { $e->indices->delete( index => 'solar' ); };
     $e->indices->create( index => 'solar' );
     $e->indices->put_mapping(
         index => 'solar',
-        type  => 'device',
-        include_type_name => \1,
-        body  => {
-            properties        => {
+
+        # type              => 'device',
+        #include_type_name => \1,
+        body => {
+            properties => {
                 p_3phsum_kw     => { type => 'float' },    # AC power kWh
                 p_mpptsum_kw    => { type => 'float' },    # AC power kWh
                 ltea_3phsum_kwh => { type => 'float' },    # total energy kWh
@@ -35,20 +37,34 @@ if ( $ENV{CREATE} ) {
 
 my @files = @ARGV ? @ARGV : <STDIN>;
 
-for my $json_file (@files) {
-    next unless -s $json_file;
+for my $file_or_dir (@files) {
+    next unless -s $file_or_dir;
+
+    if ( -d $file_or_dir ) {
+        my $dir = path($file_or_dir);
+        for my $f ( $dir->children ) {
+            process_file($f);
+        }
+    }
+    else {
+        process_file($file_or_dir);
+    }
+}
+
+sub process_file {
+    my $json_file = shift;
 
     my $buf;
     try { $buf = read_json($json_file) };
 
-    next unless $buf;
+    return unless $buf;
 
     my ($id) = ( $json_file =~ m/([\d\-]+)\.json/ );
 
     #warn $id;
 
     # each device is a "document"
-    my $bulk = $e->bulk_helper( index => 'solar', type => 'device' );
+    my $bulk = $e->bulk_helper( index => 'solar', );
     for my $device ( @{ $buf->{devices} } ) {
         my $id = join( "-", $id, $device->{SERIAL} );
         my @dtime = split( ',', $device->{CURTIME} );

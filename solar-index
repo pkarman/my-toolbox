@@ -37,12 +37,17 @@ if ( $ENV{CREATE} ) {
 
 my @files = @ARGV ? @ARGV : <STDIN>;
 
+my $PROCESSED = 0;
+
 for my $file_or_dir (@files) {
     next unless -s $file_or_dir;
+
+    #warn "processing $file_or_dir\n";
 
     if ( -d $file_or_dir ) {
         my $dir = path($file_or_dir);
         for my $f ( $dir->children ) {
+            # warn "processing $f\n";
             process_file($f);
         }
     }
@@ -72,5 +77,11 @@ sub process_file {
         $bulk->index( { id => $id, source => $device } );
     }
     $bulk->flush;
+
+    $PROCESSED++;
+
+    if ( !$PROCESSED % 1000 ) {
+        warn "processed $PROCESSED\n";
+    }
 }
 

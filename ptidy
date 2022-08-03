@@ -29,6 +29,9 @@ for my $file (@ARGV) {
     elsif ( is_js( $buf, $file ) ) {
         run_js_prettier($file);
     }
+    elsif ( is_python( $buf, $file ) ) {
+        run_python_prettier($file);
+    }
     run("chmod +x $file") if $is_x;
 }
 
@@ -88,6 +91,12 @@ sub is_js {
     return $file =~ /\.jsx?$/;
 }
 
+sub is_python {
+    my ( $buf, $file ) = @_;
+    return 1 if $buf =~ /env python/;
+    return $file =~ /\.py$/;
+}
+
 sub run {
     my $cmd = shift;
 
@@ -115,3 +124,7 @@ sub run_js_prettier {
     run("npx prettier -w $file");
 }
 
+sub run_python_prettier {
+    my $file = shift;
+    run("black $file");
+}

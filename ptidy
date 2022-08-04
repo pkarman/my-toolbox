@@ -77,9 +77,6 @@ sub is_ruby {
     if ( $buf =~ m!/bin/ruby! ) {
         return 1;
     }
-    if ( $buf =~ m!\nclass \w+! ) {
-        return 1;
-    }
     if ( $buf =~ m!require (['"])rubygems\1! ) {
         return 1;
     }

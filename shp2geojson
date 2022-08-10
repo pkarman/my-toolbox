@@ -6,6 +6,7 @@ my $usage    = "$0 file.shp [s_srs]\n";
 my $shp_file = shift(@ARGV) or die $usage;
 my $s_srs    = shift(@ARGV) || 'crs:84';
 ( my $bare_file = $shp_file ) =~ s/\.shp$//;
+$bare_file =~ s/\W+/-/g;
 my $geojson = "$bare_file.geojson";
 die $usage if $bare_file eq $shp_file;
 
@@ -13,6 +14,6 @@ if ( -s $geojson ) {
     die "$geojson already exists\n";
 }
 
-my $cmd = "ogr2ogr -f GeoJSON -t_srs crs:84 -s_srs $s_srs $geojson $shp_file";
+my $cmd = "ogr2ogr -f GeoJSON -t_srs crs:84 -s_srs $s_srs $geojson \"$shp_file\"";
 print $cmd, $/;
 system($cmd) and die "$cmd failed: $!";

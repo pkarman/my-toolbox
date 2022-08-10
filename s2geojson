@@ -1,0 +1,8 @@
+#!/bin/sh
+
+set -x
+set -e
+
+SHP_FILE=$1
+
+mapshaper "${SHP_FILE}" -simplify 1% -o format=geojson

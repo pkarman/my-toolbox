@@ -2,4 +2,4 @@
 
 FILE=$1
 
-ogrinfo -ro -so -al $FILE
+ogrinfo -ro -so -al "$FILE"

@@ -123,5 +123,5 @@ sub run_js_prettier {
 
 sub run_python_prettier {
     my $file = shift;
-    run("black $file");
+    run("black --config ~/.blackrc.toml $file");
 }

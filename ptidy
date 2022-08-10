@@ -5,6 +5,10 @@ use warnings;
 #
 # call language-appropriate tidier.
 #
+# python requires:
+# $ cat ~/.blackrc.toml
+# [tool.black]
+# line-length = 160
 
 use File::Slurp::Tiny qw( read_file );
 

@@ -4,7 +4,7 @@ export MANPAGER="less"
 export TERM="xterm-color"
 export EDITOR=vim
 export LESS=FRXe
-export PATH="$HOME/my-toolbox:$PATH"
+export PATH="$HOME/my-toolbox:/usr/local/bin:$PATH"
 export DOCKER_BUILDKIT=1
 
 unset autologout        # don't log me out. please.

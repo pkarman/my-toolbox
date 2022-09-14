@@ -2,7 +2,7 @@
 #
 # intended to be sourced from .bashrc like this:
 # init-my-mfa() {
-#   source $HOME/my-toolbox/aws-mfa my-aws-profile my-username my-role org-id sub-account-id $1 $2
+#   source $HOME/my-toolbox/aws-org-mfa my-aws-profile my-username my-role org-id sub-account-id $1 $2
 # }
 
 if [[ $# -ne 6 ]]; then

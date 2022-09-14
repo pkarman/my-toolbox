@@ -1,0 +1,70 @@
+#!/bin/bash -e
+#
+# intended to be sourced from .bashrc like this:
+# init-my-mfa() {
+#   source $HOME/my-toolbox/aws-mfa my-aws-profile my-username my-role org-id sub-account-id $1 $2
+# }
+
+if [[ $# -ne 6 ]]; then
+  echo "$0 AWS_PROFILE AWS_USERNAME AWS_ROLE_NAME AWS_ACCOUNT_ID1 AWS_ACCOUNT_ID2 mfacode [-v]"
+  # if sourced, just return
+  if [[ "$0" == "/bin/bash" ]]; then
+    return 0
+  else
+    exit 1
+  fi
+fi
+
+# The profile with the initial access key you plan to use
+AWS_PROFILE=$1
+# Username associated with access key
+AWS_USERNAME=$2
+# Role you plan to assume in account number two
+AWS_ROLE_NAME=$3
+# ID of the parent account
+AWS_ACCOUNT_ID1=$4
+# ID of the child account
+AWS_ACCOUNT_ID2=$5
+
+# Clear out existing variables so they don't interfere
+unset AWS_ACCESS_KEY_ID
+unset AWS_SECRET_ACCESS_KEY
+unset AWS_SESSION_TOKEN
+
+MFA_CODE=$6
+
+VERBOSE=$7
+
+# Auth to parent AWS account
+CREDENTIALS_ORG=$(AWS_PROFILE="${AWS_PROFILE}" aws sts get-session-token --serial-number="arn:aws:iam::${AWS_ACCOUNT_ID1}:mfa/${AWS_USERNAME}" --duration-seconds=900 --token-code="${MFA_CODE}")
+
+# Extract and export the credentials
+export AWS_ACCESS_KEY_ID=$(echo $CREDENTIALS_ORG | sed -E 's!.*"AccessKeyId": *"([A-Z0-9]+)",.*!\1!')
+export AWS_SECRET_ACCESS_KEY=$(echo $CREDENTIALS_ORG | sed -E 's!.*"SecretAccessKey": *"([a-zA-Z0-9/+]+)",.*!\1!')
+export AWS_SESSION_TOKEN=$(echo $CREDENTIALS_ORG | sed -E 's!.*"SessionToken": *"([a-zA-Z0-9/+=]+)",.*!\1!')
+
+# Auth to assumed role
+CREDENTIALS_PROD=$(aws sts assume-role --role-arn "arn:aws:iam::${AWS_ACCOUNT_ID2}:role/${AWS_ROLE_NAME}" --role-session-name="AssumedRoleAccess")
+
+# Extract new credentials from sub-account
+export AWS_ACCESS_KEY_ID=$(echo $CREDENTIALS_PROD | sed -E 's!.*"AccessKeyId": *"([A-Z0-9]+)",.*!\1!')
+export AWS_SECRET_ACCESS_KEY=$(echo $CREDENTIALS_PROD | sed -E 's!.*"SecretAccessKey": *"([a-zA-Z0-9/+]+)",.*!\1!')
+export AWS_SESSION_TOKEN=$(echo $CREDENTIALS_PROD | sed -E 's!.*"SessionToken": *"([a-zA-Z0-9/+=]+)",.*!\1!')
+
+if [[ "$VERBOSE" == "-v" ]]; then
+  echo "Copy and paste the following commands:"
+  echo "-----"
+  echo ""
+  echo "export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}"
+  echo "export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}"
+  echo "export AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN}"
+  echo ""
+  echo "-----"
+fi
+
+if [[ "$CREDENTIALS_PROD" != "" ]]; then
+  # Figure out when this session expires and let the user know in their local time
+  EXPIRATION=$(echo $CREDENTIALS_PROD | sed -E 's!.*"Expiration": *"([a-zA-Z0-9+:-]+)".*!\1!' | sed -E 's!\+00:00!+0000!')
+  EXPIRATION_PRETTY=$(date -jf "%Y-%m-%dT%H:%M:%S%z" "${EXPIRATION}" +"%r")
+  echo "This session will expire at ${EXPIRATION_PRETTY} (${EXPIRATION})"
+fi

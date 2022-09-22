@@ -5,7 +5,7 @@
 #   source $HOME/my-toolbox/aws-org-mfa my-aws-profile my-username my-role org-id sub-account-id $1 $2
 # }
 
-if [[ $# -ne 6 ]]; then
+if [[ $# -lt 6 ]]; then
   echo "$0 AWS_PROFILE AWS_USERNAME AWS_ROLE_NAME AWS_ACCOUNT_ID1 AWS_ACCOUNT_ID2 mfacode [-v]"
   # if sourced, just return
   if [[ "$0" == "/bin/bash" ]]; then

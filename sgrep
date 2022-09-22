@@ -2,8 +2,9 @@
 
 use strict;
 use warnings;
-my $arg = join(' ', map { m/\s/ ? qq/'$_'/ : $_ } @ARGV);
-my $cmd = "grep -r --exclude-dir=node_modules --exclude-dir=.venv --exclude-dir=.git --exclude-dir=.svn --exclude=.phptidybak --exclude-dir app/assets --exclude-dir 'venv' $arg"; 
-warn $cmd , $/;
+my $arg = join( ' ', map { m/\s/ ? qq/'$_'/ : $_ } @ARGV );
+my $cmd
+    = "grep -r --exclude-dir=node_modules --exclude-dir=.venv --exclude-dir=__pycache__ --exclude-dir=.git --exclude-dir=.svn --exclude=.phptidybak --exclude-dir app/assets --exclude-dir 'venv' $arg";
+warn $cmd, $/;
 system("$cmd");
 

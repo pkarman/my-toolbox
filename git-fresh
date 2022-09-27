@@ -5,7 +5,12 @@ if [ -d .git ]; then
   git checkout `git remote show origin | grep 'HEAD branch' | sed 's/.*: //'` 
   git pull
   git remote prune origin
-  git branch -vv | grep ': gone]' | awk '{print $1}' | xargs git branch -D
+  NUMBRANCHES=$(git branch -vv | wc -l)
+  if [ "$NUMBRANCHES" == "1" ]; then
+    echo "up to date"
+  else
+    git branch -vv | grep ': gone]' | awk '{print $1}' | xargs git branch -D
+  fi
 else
   echo "Not a git repository or you need to chdir to top level."
 fi

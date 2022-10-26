@@ -122,7 +122,8 @@ sub run_ruby_tidy {
 
 sub run_js_prettier {
     my $file = shift;
-    run("npx prettier -w $file");
+    run("eslint --fix $file");
+    #run("npx prettier -w $file");
 }
 
 sub run_python_prettier {

@@ -135,10 +135,10 @@ if [ ! ${SSH_AGENT_PID} ]; then
     rm -f "${SSH_ENV}"
   fi
   if [ -s "${SSH_ENV}" ]; then
-    cat $SSH_ENV
+    #cat $SSH_ENV
     . "${SSH_ENV}" > /dev/null
     #ps ${SSH_AGENT_PID} doesn't work under cywgin
-    echo "checking for running ssh-agent: ps -ef | grep ${SSH_AGENT_PID} | grep ssh-agent"
+    #echo "checking for running ssh-agent: ps -ef | grep ${SSH_AGENT_PID} | grep ssh-agent"
     ps -ef | grep ${SSH_AGENT_PID} | grep ssh-agent > /dev/null || {
       start_agent;
     }

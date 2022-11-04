@@ -1,3 +1,4 @@
+export HOST=`hostname`
 export HOSTNAME="`hostname | sed -e 's,\..*,,'`"
 export PAGER="less"
 export MANPAGER="less"

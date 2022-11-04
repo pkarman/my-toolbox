@@ -12,6 +12,7 @@ syntax on
 " always show filename and status bar in blue+white
 set laststatus=2
 set statusline+=%F
+set statusline+=\ col:\ %c,
 hi StatusLine ctermbg=white ctermfg=blue
 
 set backspace=indent,eol,start

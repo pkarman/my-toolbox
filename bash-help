@@ -128,15 +128,22 @@ function start_agent {
 # Source SSH settings, if applicable
 
 if [ ! ${SSH_AGENT_PID} ]; then
-if [ -f "${SSH_ENV}" ]; then
-     #echo "SSH_ENV = $SSH_ENV"
-     . "${SSH_ENV}" > /dev/null
-     #ps ${SSH_AGENT_PID} doesn't work under cywgin
-     ps -ef | grep ${SSH_AGENT_PID} | grep ssh-agent$ > /dev/null || {
-         start_agent;
-     }
-else
-     start_agent;
-fi
+  echo "SSH_ENV = $SSH_ENV"
+  # do we have a stale/empty env file?
+  if [ -f "${SSH_ENV}" ] && [ ! -s "${SSH_ENV}" ]; then
+    echo "found empty ${SSH_ENV}"
+    rm -f "${SSH_ENV}"
+  fi
+  if [ -s "${SSH_ENV}" ]; then
+    cat $SSH_ENV
+    . "${SSH_ENV}" > /dev/null
+    #ps ${SSH_AGENT_PID} doesn't work under cywgin
+    echo "checking for running ssh-agent: ps -ef | grep ${SSH_AGENT_PID} | grep ssh-agent"
+    ps -ef | grep ${SSH_AGENT_PID} | grep ssh-agent > /dev/null || {
+      start_agent;
+    }
+  else
+    start_agent;
+  fi
 fi
 

@@ -128,7 +128,7 @@ function start_agent {
 # Source SSH settings, if applicable
 
 if [ ! ${SSH_AGENT_PID} ]; then
-  echo "SSH_ENV = $SSH_ENV"
+  # echo "SSH_ENV = $SSH_ENV"
   # do we have a stale/empty env file?
   if [ -f "${SSH_ENV}" ] && [ ! -s "${SSH_ENV}" ]; then
     echo "found empty ${SSH_ENV}"

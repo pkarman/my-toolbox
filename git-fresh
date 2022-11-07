@@ -1,4 +1,6 @@
-#!/bin/sh
+#!/bin/bash
+
+set -e
 
 # pull latest master, clean up old branches
 if [ -d .git ]; then
@@ -6,10 +8,12 @@ if [ -d .git ]; then
   git pull
   git remote prune origin
   NUMBRANCHES=$(git branch -vv | wc -l)
+  STALE_BRANCHES=$(git branch -vv | grep ': gone]' | awk '{print $1}')
   if [ "$NUMBRANCHES" == "1" ]; then
     echo "up to date"
-  else
-    git branch -vv | grep ': gone]' | awk '{print $1}' | xargs git branch -D
+  fi
+  if [ "$STALE_BRANCHES" != "" ]; then
+    echo $STALE_BRANCHES | xargs git branch -D
   fi
 else
   echo "Not a git repository or you need to chdir to top level."

@@ -114,6 +114,7 @@ SSH_ENV="$HOME/.ssh/environment.$HOST"
 function start_agent {
     export SSH_AUTH_SOCK=${SSH_ENV}.sock
     echo "Initialising new SSH agent..."
+    rm -f $SSH_AUTH_SOCK
     /usr/bin/ssh-agent -a "$SSH_AUTH_SOCK" | sed 's/^echo/#echo/' > "${SSH_ENV}"
     echo succeeded
     chmod 600 "${SSH_ENV}"

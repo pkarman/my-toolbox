@@ -4,8 +4,11 @@ use warnings;
 
 for my $csvfile (@ARGV) {
     my $jsonfile = $csvfile;
-    $jsonfile =~ s/.csv$/.json/;
-    print "Converting $csvfile\n";
-    system("csv2json $csvfile > $jsonfile")
+    $jsonfile =~ s,/,PATHSEP,g;
+    $jsonfile =~ s/\W/-/g;
+    $jsonfile =~ s/-csv$/.json/;
+    $jsonfile =~ s,PATHSEP,/,g;
+    print "Converting $csvfile -> $jsonfile\n";
+    system("csv2json '$csvfile' > $jsonfile")
         and die "Failed to convert $csvfile: $!";
 }

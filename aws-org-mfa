@@ -64,7 +64,7 @@ fi
 
 if [[ "$CREDENTIALS_PROD" != "" ]]; then
   # Figure out when this session expires and let the user know in their local time
-  EXPIRATION=$(echo $CREDENTIALS_PROD | sed -E 's!.*"Expiration": *"([a-zA-Z0-9+:-]+)".*!\1!' | sed -E 's!\+00:00!+0000!')
+  EXPIRATION=$(echo $CREDENTIALS_PROD | grep Expiration | perl -n -e 's/Expiration": "(.+?)\+00:00"/$1/; print "$1+0000"')
   EXPIRATION_PRETTY=$(date -jf "%Y-%m-%dT%H:%M:%S%z" "${EXPIRATION}" +"%r")
   echo "This session will expire at ${EXPIRATION_PRETTY} (${EXPIRATION})"
 fi

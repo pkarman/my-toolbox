@@ -36,6 +36,9 @@ for my $file (@ARGV) {
     elsif ( is_python( $buf, $file ) ) {
         run_python_prettier($file);
     }
+    elsif ( is_markdown( $buf, $file ) or is_handlebars( $buf, $file ) ) {
+        run_markdown_prettier($file);
+    }
     run("chmod +x $file") if $is_x;
 }
 
@@ -98,6 +101,16 @@ sub is_python {
     return $file =~ /\.py$/;
 }
 
+sub is_markdown {
+    my ( $buf, $file ) = @_;
+    return $file =~ /\.md$/;
+}
+
+sub is_handlebars {
+    my ( $buf, $file ) = @_;
+    return $file =~ /\.hbs$/;
+}
+
 sub run {
     my $cmd = shift;
 
@@ -122,11 +135,19 @@ sub run_ruby_tidy {
 
 sub run_js_prettier {
     my $file = shift;
+
+    #run("eslint --fix $file");
+    run("npx prettier -w --single-quote --print-width 100 $file");
     run("eslint --fix $file");
-    #run("npx prettier -w $file");
 }
 
 sub run_python_prettier {
     my $file = shift;
     run("black --config ~/.blackrc.toml $file");
 }
+
+sub run_markdown_prettier {
+    my $file = shift;
+    run("prettier -w $file");
+}
+

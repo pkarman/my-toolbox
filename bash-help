@@ -148,3 +148,5 @@ if [ ! ${SSH_AGENT_PID} ]; then
   fi
 fi
 
+# no timeout on OSX
+function timeout() { perl -e 'alarm shift; exec @ARGV' "$@"; }

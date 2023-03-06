@@ -148,6 +148,6 @@ sub run_python_prettier {
 
 sub run_markdown_prettier {
     my $file = shift;
-    run("prettier -w $file");
+    run("prettier -w --print-width 100 --no-config $file");
 }
 

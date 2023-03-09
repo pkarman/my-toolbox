@@ -36,10 +36,18 @@ for my $file (@ARGV) {
     elsif ( is_python( $buf, $file ) ) {
         run_python_prettier($file);
     }
-    elsif ( is_markdown( $buf, $file ) or is_handlebars( $buf, $file ) ) {
+    elsif (is_markdown( $buf, $file )
+        or is_handlebars( $buf, $file )
+        or is_yaml( $buf, $file ) )
+    {
         run_markdown_prettier($file);
     }
     run("chmod +x $file") if $is_x;
+}
+
+sub is_yaml {
+    my ( $buf, $file ) = @_;
+    return $file =~ m/\.ya?ml$/;
 }
 
 sub is_php {

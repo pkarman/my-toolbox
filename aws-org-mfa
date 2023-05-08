@@ -39,17 +39,17 @@ VERBOSE=$7
 CREDENTIALS_ORG=$(AWS_PROFILE="${AWS_PROFILE}" aws sts get-session-token --serial-number="arn:aws:iam::${AWS_ACCOUNT_ID1}:mfa/${AWS_USERNAME}" --duration-seconds=900 --token-code="${MFA_CODE}")
 
 # Extract and export the credentials
-export AWS_ACCESS_KEY_ID=$(echo $CREDENTIALS_ORG | sed -E 's!.*"AccessKeyId": *"([A-Z0-9]+)",.*!\1!')
-export AWS_SECRET_ACCESS_KEY=$(echo $CREDENTIALS_ORG | sed -E 's!.*"SecretAccessKey": *"([a-zA-Z0-9/+]+)",.*!\1!')
-export AWS_SESSION_TOKEN=$(echo $CREDENTIALS_ORG | sed -E 's!.*"SessionToken": *"([a-zA-Z0-9/+=]+)",.*!\1!')
+export AWS_ACCESS_KEY_ID=$(echo $CREDENTIALS_ORG | jq '.Credentials.AccessKeyId' | tr -d \")
+export AWS_SECRET_ACCESS_KEY=$(echo $CREDENTIALS_ORG | jq '.Credentials.SecretAccessKey' | tr -d \")
+export AWS_SESSION_TOKEN=$(echo $CREDENTIALS_ORG | jq '.Credentials.SessionToken' | tr -d \")
 
 # Auth to assumed role
 CREDENTIALS_PROD=$(aws sts assume-role --role-arn "arn:aws:iam::${AWS_ACCOUNT_ID2}:role/${AWS_ROLE_NAME}" --role-session-name="AssumedRoleAccess")
 
 # Extract new credentials from sub-account
-export AWS_ACCESS_KEY_ID=$(echo $CREDENTIALS_PROD | sed -E 's!.*"AccessKeyId": *"([A-Z0-9]+)",.*!\1!')
-export AWS_SECRET_ACCESS_KEY=$(echo $CREDENTIALS_PROD | sed -E 's!.*"SecretAccessKey": *"([a-zA-Z0-9/+]+)",.*!\1!')
-export AWS_SESSION_TOKEN=$(echo $CREDENTIALS_PROD | sed -E 's!.*"SessionToken": *"([a-zA-Z0-9/+=]+)",.*!\1!')
+export AWS_ACCESS_KEY_ID=$(echo $CREDENTIALS_PROD | jq '.Credentials.AccessKeyId' | tr -d \")
+export AWS_SECRET_ACCESS_KEY=$(echo $CREDENTIALS_PROD | jq '.Credentials.SecretAccessKey' | tr -d \")
+export AWS_SESSION_TOKEN=$(echo $CREDENTIALS_PROD | jq '.Credentials.SessionToken' | tr -d \")
 
 if [[ "$VERBOSE" == "-v" ]]; then
   echo "Copy and paste the following commands:"

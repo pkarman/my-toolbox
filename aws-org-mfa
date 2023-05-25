@@ -64,7 +64,11 @@ fi
 
 if [[ "$CREDENTIALS_PROD" != "" ]]; then
   # Figure out when this session expires and let the user know in their local time
-  EXPIRATION=$(echo $CREDENTIALS_PROD | grep Expiration | perl -n -e 's/Expiration": "(.+?)\+00:00"/$1/; print "$1+0000"')
-  EXPIRATION_PRETTY=$(date -jf "%Y-%m-%dT%H:%M:%S%z" "${EXPIRATION}" +"%r")
+  EXPIRATION=$(echo $CREDENTIALS_PROD | jq '.Credentials.Expiration' | tr -d \" | perl -n -e 's/(\+00:00|Z)/+0000/; print')
+  if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    EXPIRATION_PRETTY=$(date --date "${EXPIRATION}")
+  elif [[ "$OSTYPE" == "darwin"* ]]; then
+    EXPIRATION_PRETTY=$(date -jf "%Y-%m-%dT%H:%M:%S%z" "${EXPIRATION}" +"%r")
+  fi
   echo "This session will expire at ${EXPIRATION_PRETTY} (${EXPIRATION})"
 fi

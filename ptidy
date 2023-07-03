@@ -5,10 +5,6 @@ use warnings;
 #
 # call language-appropriate tidier.
 #
-# python requires:
-# $ cat ~/.blackrc.toml
-# [tool.black]
-# line-length = 160
 
 use File::Slurp::Tiny qw( read_file );
 
@@ -151,7 +147,7 @@ sub run_js_prettier {
 
 sub run_python_prettier {
     my $file = shift;
-    run("black --config ~/.blackrc.toml $file");
+    run("black $file");
 }
 
 sub run_markdown_prettier {

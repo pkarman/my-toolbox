@@ -103,6 +103,7 @@ function prompt {
     PS4='+ '
 }
 case $HOSTNAME in
+     pekmac*)     prompt  red ;;
      workhorse*)  prompt  purple ;;
      linode*)     prompt  green ;;
               *)  prompt  blue ;;

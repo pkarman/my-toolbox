@@ -1,5 +1,13 @@
 #!/bin/sh
 
+# source this file at the start of your git repo's `pre-commit` hook
+#
+# e.g.
+#  . ~/my-toolbox/git-protect-main-branch
+#
+# This is often necessary because GitHub will allow you to push to `main`
+# even when branch protections are turned on, because of the admin override option.
+
 branch="$(git rev-parse --abbrev-ref HEAD)"
 
 if [ "$branch" = "main" ]; then

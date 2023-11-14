@@ -12,3 +12,4 @@ reponame=`echo $url | perl -n -e 's,.+/|\.git$,,g; print'`
 git clone $url
 cd $reponame
 git config user.email $email
+echo '. ~/my-toolbox/git-protect-main-branch' >> .git/hooks/pre-commit

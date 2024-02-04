@@ -20,6 +20,12 @@ set backspace=indent,eol,start
 " small tab size
 set ts=2
 
+" no autoindent
+filetype indent off
+" set formatoptions-=o
+set formatoptions-=r
+map #1 :set formatoptions-=r
+
 " so $HOME/.vim/syntax/typescript.vim
 au BufRead,BufNewFile *.ts,*.tsx,*.rst setfiletype typescriptreact
 autocmd BufRead,BufNewFile *.ts,*.tsx,*.rst set syntax=typescriptreact

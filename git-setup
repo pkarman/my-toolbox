@@ -13,3 +13,4 @@ git clone $url
 cd $reponame
 git config user.email $email
 echo '. ~/my-toolbox/git-protect-main-branch' >> .git/hooks/pre-commit
+chmod 755 .git/hooks/pre-commit

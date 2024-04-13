@@ -18,7 +18,7 @@ $commit_msg_file->spew($commit_msg);
 run_it("git reset --soft HEAD~$numsquash");
 
 # commit
-run_it("git commit -a -F $commit_msg_file");
+run_it("git commit -s -a -F $commit_msg_file");
 
 # clean up
 $commit_msg_file->remove;

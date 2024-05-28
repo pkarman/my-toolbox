@@ -56,6 +56,8 @@ for my $file_or_dir (@files) {
     }
 }
 
+# printf("Processed %s files\n", $PROCESSED);
+
 sub process_file {
     my $json_file = shift;
 

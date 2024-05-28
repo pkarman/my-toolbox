@@ -1,4 +1,7 @@
-#!/bin/sh
+#!/bin/bash
+
+set -x
+set -e
 
 NOW=`date '+%Y%m%d-%H%M%S'`
 URL='http://172.27.153.1/cgi-bin/dl_cgi?Command=DeviceList'

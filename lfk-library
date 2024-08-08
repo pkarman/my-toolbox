@@ -150,7 +150,7 @@ sub checked_out_items {
 sub build_report_table {
     my ( $www, $checked_out, $who ) = @_;
     my $count = 0;
-    my @rows = ( [@$TABLE_HEADER] );
+    my @rows  = ( [@$TABLE_HEADER] );
     push @{ $rows[0] }, 'Renewed' if $RENEW;
     for my $item ( $checked_out->get_nodelist ) {
 
@@ -210,7 +210,7 @@ sub build_report_table {
             my $holds
                 = $tree->find_by_attribute( 'testid', 'text_holdcopies' );
             $holds = $holds->as_trimmed_text if $holds;
-            $holds =~ s/ \w+ waiting// if $holds;
+            $holds =~ s/ \w+ waiting//       if $holds;
 
             $VERBOSE and say "holds: $holds";
             $pending_holds = $holds if $holds;
@@ -234,8 +234,8 @@ sub build_report_table {
             class => 'due-date-notice'
         );
 
-        my $due = $duedate || $duedate_soon;
-        my $due_when = $due->as_trimmed_text( extra_chars => '\xA0' );
+        my $due            = $duedate || $duedate_soon;
+        my $due_when       = $due->as_trimmed_text( extra_chars => '\xA0' );
         my $days_remaining = 0;
         if ($duedate_soon) {
             $days_remaining = $duedate_soon->as_trimmed_text;
@@ -263,8 +263,11 @@ sub build_report_table {
         }
 
         my $row = [
-            ++$count, format_title( $title, $item_link->attr('href') ),
-            $due_when, $pending_holds, ( $is_ebook ? 'x' : '' )
+            ++$count,
+            { raw_html => format_title( $title, $item_link->attr('href') ) },
+            $due_when,
+            $pending_holds,
+            ( $is_ebook ? 'x' : '' )
         ];
 
         if (   $NOTIFY
@@ -294,7 +297,7 @@ sub build_report_table {
                 push @$row, 'renewed';
             }
             else {
-                push @$row, 'renewal failed' unless $is_ebook;
+                push @$row,         'renewal failed' unless $is_ebook;
                 push @NOTIFY_QUEUE, $row;
             }
         }
@@ -316,9 +319,9 @@ sub find_element_maybe {
 }
 
 sub find_item_id {
-    my ($item) = @_;
+    my ($item)   = @_;
     my $checkbox = $item->look_down( class => qr/cp-checkbox/ );
-    my $input = $checkbox->look_down( _tag => 'input' );
+    my $input    = $checkbox->look_down( _tag => 'input' );
     return $input->attr('value');
 }
 
@@ -393,7 +396,7 @@ say "<h1>LFK Library Report</h1>" if $HTML;
 for my $who (@patrons) {
     my $www = WWW::Mechanize->new(
         agent => 'lfk-library-bot/1.0 <peter@peknet.com>' );
-    my $username = login( $www, $who );
+    my $username    = login( $www, $who );
     my $checked_out = checked_out_items($www);
     $PATRON_PAGES{$who} = $www->content;
     my $rows = build_report_table( $www, $checked_out, $who );

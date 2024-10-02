@@ -262,11 +262,14 @@ sub build_report_table {
             say "due_when=" . $due_when;
         }
 
+        my $cell_title
+            = $HTML
+            ? { raw_html => format_title( $title, $item_link->attr('href') ) }
+            : $title;
+
         my $row = [
-            ++$count,
-            { raw_html => format_title( $title, $item_link->attr('href') ) },
-            $due_when,
-            $pending_holds,
+            ++$count,  $cell_title,
+            $due_when, $pending_holds,
             ( $is_ebook ? 'x' : '' )
         ];
 

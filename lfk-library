@@ -119,7 +119,7 @@ sub login {
     $www->get($login_url);
 
     my $response = $www->submit_form(
-        form_number => 4,
+        form_number => 5,
         fields      => {
             name     => $config->{$who}->{username},
             user_pin => $config->{$who}->{password}
@@ -257,7 +257,6 @@ sub build_report_table {
 
         if ($DEBUG) {
             say "duedate=" . $duedate->as_HTML;
-            say "duedate_soon=" . $duedate_soon->as_HTML;
             say "days_remaining=" . $days_remaining;
             say "due_when=" . $due_when;
         }

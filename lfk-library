@@ -119,7 +119,7 @@ sub login {
     $www->get($login_url);
 
     my $response = $www->submit_form(
-        form_number => 5,
+        form_number => 4,
         fields      => {
             name     => $config->{$who}->{username},
             user_pin => $config->{$who}->{password}

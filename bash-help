@@ -36,6 +36,9 @@ alias vi='vim'
 alias isodate='date "+%Y-%m-%dT%H:%M:%SZ"'
 alias pw='rand 24 1'
 
+# macos
+alias cleardns='sudo killall -HUP mDNSResponder'
+
 
 # functions sourced from .bashrc
 

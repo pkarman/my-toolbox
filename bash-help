@@ -8,6 +8,8 @@ export LESS=FRXe
 export PATH="$HOME/my-toolbox:/usr/local/bin:$PATH"
 export DOCKER_BUILDKIT=1
 
+export BASH_SILENCE_DEPRECATION_WARNING=1
+
 unset autologout        # don't log me out. please.
 
 # dev aliases

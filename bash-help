@@ -27,6 +27,7 @@ alias encrypt=' gpg -e -r $GPG_EMAIL '
 alias gc='git commit -a'
 alias pick='git cherry-pick'
 alias pdiff="$DIFF -ruw -x .svn "
+alias pmake='make -f Makefile.local'
 alias sourceenv='export $(cat .env | grep -v ^# | xargs)'
 alias splitspace="perl -n -e 's/\ /\n/g; print'"
 alias joinspace="perl -n -e 's/\n/ /; next if /#/; print'"

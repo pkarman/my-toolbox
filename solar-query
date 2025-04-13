@@ -1,11 +1,14 @@
 #!/bin/bash
 
-set -x
+# set -x
 set -e
 
 NOW=`date '+%Y%m%d-%H%M%S'`
-URL='http://172.27.153.1/cgi-bin/dl_cgi?Command=DeviceList'
-FILE="$HOME/solar/$NOW.json"
+SUBDIR=`date '+%Y%m%d'`
+mkdir -p $HOME/solar/$SUBDIR
+HOST=www.sunpowerconsole.com
+URL="http://$HOST/cgi-bin/dl_cgi?Command=DeviceList"
+FILE="$HOME/solar/$SUBDIR/$NOW.json"
 
 curl -s $URL > $FILE
 

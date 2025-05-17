@@ -6,7 +6,8 @@ set -e
 NOW=`date '+%Y%m%d-%H%M%S'`
 SUBDIR=`date '+%Y%m%d'`
 mkdir -p $HOME/solar/$SUBDIR
-HOST=www.sunpowerconsole.com
+HOST=172.27.153.1
+#HOST=www.sunpowerconsole.com
 URL="http://$HOST/cgi-bin/dl_cgi?Command=DeviceList"
 FILE="$HOME/solar/$SUBDIR/$NOW.json"
 

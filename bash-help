@@ -8,6 +8,8 @@ export LESS=FRXe
 export PATH="$HOME/my-toolbox:/usr/local/bin:$PATH"
 export DOCKER_BUILDKIT=1
 
+export BASH_SILENCE_DEPRECATION_WARNING=1
+
 unset autologout        # don't log me out. please.
 
 # dev aliases
@@ -25,6 +27,7 @@ alias encrypt=' gpg -e -r $GPG_EMAIL '
 alias gc='git commit -a'
 alias pick='git cherry-pick'
 alias pdiff="$DIFF -ruw -x .svn "
+alias pmake='make -f Makefile.local'
 alias sourceenv='export $(cat .env | grep -v ^# | xargs)'
 alias splitspace="perl -n -e 's/\ /\n/g; print'"
 alias joinspace="perl -n -e 's/\n/ /; next if /#/; print'"
@@ -33,6 +36,9 @@ alias venv='. venv/bin/activate'
 alias vi='vim'
 alias isodate='date "+%Y-%m-%dT%H:%M:%SZ"'
 alias pw='rand 24 1'
+
+# macos
+alias cleardns='sudo killall -HUP mDNSResponder'
 
 
 # functions sourced from .bashrc

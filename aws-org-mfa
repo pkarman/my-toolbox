@@ -35,6 +35,12 @@ MFA_CODE=$6
 
 VERBOSE=$7
 
+if [[ "$VERBOSE" == "-v" ]]; then
+  echo "turning on verbose mode"
+  set -x
+  set -e
+fi
+
 # Auth to parent AWS account
 CREDENTIALS_ORG=$(AWS_PROFILE="${AWS_PROFILE}" aws sts get-session-token --serial-number="arn:aws:iam::${AWS_ACCOUNT_ID1}:mfa/${AWS_USERNAME}" --duration-seconds=900 --token-code="${MFA_CODE}")
 

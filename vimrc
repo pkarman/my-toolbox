@@ -23,3 +23,9 @@ set ts=2
 " so $HOME/.vim/syntax/typescript.vim
 au BufRead,BufNewFile *.ts,*.tsx,*.rst setfiletype typescriptreact
 autocmd BufRead,BufNewFile *.ts,*.tsx,*.rst set syntax=typescriptreact
+
+" fix typescript bug
+set re=2
+
+" do not append newline at end of files that do not have it already
+set nofixeol

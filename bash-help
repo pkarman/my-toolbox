@@ -166,7 +166,7 @@ fi
 function timeout() { perl -e 'alarm shift; exec @ARGV' "$@"; }
 
 # package managers
-eval "$(/opt/homebrew/bin/brew shellenv)"
+[ -s "/opt/homebrew/bin/brew" ] && eval "$(/opt/homebrew/bin/brew shellenv)"
 
 if which pyenv-virtualenv-init > /dev/null; then eval "$(pyenv virtualenv-init -)"; fi
 
@@ -203,8 +203,13 @@ pyenvVirtualenvUpdatePrompt() {
 }
 
 export NVM_DIR="$HOME/.nvm"
+# mac is global
 [ -s "/opt/homebrew/opt/nvm/nvm.sh" ] && \. "/opt/homebrew/opt/nvm/nvm.sh"  # This loads nvm
 [ -s "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm" ] && \. "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm"  # This loads nvm bash_completion
+# or nvm in homedir
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+[ -s "$NVM_DIR/bash_completion.d/nvm" ] && \. "$NVM_DIR/bash_completion.d/nvm"
+
 
 # nvm magic
 enter_directory() {

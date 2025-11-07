@@ -195,7 +195,13 @@ sub build_report_table {
         # some caching bug on site prevents holds from always showing up
         # on the summary list page. So check the item subscription stats page.
             my $href = $item_link->attr('href');
-            my ($item_id) = ( $href =~ m,/item/show/(\d+), );
+            my ($item_id) = ( $href =~ m,/v2/record/(\w+), );
+            #my ($item_id) = ( $href =~ m,/item/show/(\d+), );
+
+            if ( !$item_id ) {
+                warn "No item_id in $href";
+                next;
+            }
 
             #say $href;
             #say $item_id;
